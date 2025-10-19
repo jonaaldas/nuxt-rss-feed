@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
-// import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
-// const signInWithGoogle = async () => {
-//   try {
-//     const data = await authClient.signIn.social({
-//       provider: "google",
-//       callbackURL: callbackURL,
-//     });
-//     console.log(data);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
+const signInWithGoogle = async () => {
+  try {
+    const data = await authClient.signIn.social({
+      provider: "google",
+    });
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
 </script>
 
 <template>
@@ -29,7 +28,7 @@ import { Button } from "@/components/ui/button";
           <Button
             variant="outline"
             class="w-full"
-            @click="() => {}"
+            @click="signInWithGoogle"
             type="button"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

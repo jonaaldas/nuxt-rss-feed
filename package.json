@@ -8,12 +8,13 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "db:generate": "drizzle-kit generate:pg",
-    "db:push": "drizzle-kit push:pg",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@better-auth/client": "^0.0.2-alpha.3",
     "@trpc/client": "^11.6.0",
     "@trpc/server": "^11.6.0",
     "@types/pg": "^8.15.5",
