@@ -16,12 +16,11 @@ export const appRouter = createTRPCRouter({
     .input(z.object({ url: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const user = ctx.user;
-      const url = input.url;
 
-      const feed = await fetchRssFeed(url);
+      const feed = await fetchRssFeed(input.url);
       const data = {
         userId: user.id,
-        url,
+        url: input.url,
         title: feed.title,
         link: feed.link,
         feedUrl: feed.feedUrl,

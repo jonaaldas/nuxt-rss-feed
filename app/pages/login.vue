@@ -7,7 +7,6 @@ const signInWithGoogle = async () => {
     const data = await authClient.signIn.social({
       provider: "google",
     });
-    console.log(data);
   } catch (error) {
     console.error(error);
   }

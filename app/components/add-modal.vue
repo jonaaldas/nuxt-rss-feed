@@ -20,17 +20,15 @@ const queryCache = useQueryCache();
 
 const { mutate: saveRssFeed } = useMutation({
   key: ["saveRssFeed"],
-  mutation: async () => {
-    const response = await $trpc.saveRssFeed.mutate({
-      url: url.value,
-    });
+  mutation: async ({ url }: { url: string }) => {
+    const response = await $trpc.saveRssFeed.mutate({ url });
     if (response.error) {
       throw new Error(response.error as string);
     }
     return response.data;
   },
   onSuccess: (data) => {
-    console.log(data);
+    url.value = ""; // Clear the input after success
   },
   onError: (error) => {
     console.error(error);
@@ -58,7 +56,11 @@ const { mutate: saveRssFeed } = useMutation({
       </DialogHeader>
       <Input v-model="url" placeholder="https://example.com/feed.xml" />
       <DialogFooter>
-        <Button variant="secondary" @click="saveRssFeed()" :disabled="!url">
+        <Button
+          variant="secondary"
+          @click="() => saveRssFeed({ url })"
+          :disabled="!url"
+        >
           <Plus class="w-4 h-4" />
           Add feed
         </Button>

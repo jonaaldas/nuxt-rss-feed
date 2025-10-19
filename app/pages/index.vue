@@ -150,7 +150,11 @@ watch(
 
 <template>
   <SidebarProvider>
-    <AppSidebar :navMain="navMain" />
+    <AppSidebar
+      :navMain="navMain"
+      @select-article="handleArticleSelect"
+      @select-feed="handleFeedSelect"
+    />
     <SidebarInset>
       <header
         class="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 justify-between"
@@ -219,7 +223,7 @@ watch(
               v-for="item in selectedFeed.items"
               :key="item.link || item.guid"
               class="hover:shadow-lg transition-shadow cursor-pointer group"
-              @click="() => {}"
+              @click="handleArticleSelect(item)"
             >
               <CardHeader>
                 <CardTitle
@@ -260,7 +264,7 @@ watch(
                   variant="default"
                   size="sm"
                   class="flex-1"
-                  @click="() => {}"
+                  @click="handleArticleSelect(item)"
                 >
                   Read Article
                 </Button>
@@ -303,7 +307,7 @@ watch(
               >Read original →</a
             >
           </div>
-          <div v-html="'<p>Hello World</p>'"></div>
+          <div v-html="articleContent"></div>
         </article>
       </div>
     </SidebarInset>

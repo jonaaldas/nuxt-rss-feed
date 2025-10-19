@@ -17,16 +17,7 @@ export const createTRPCContext = async (event: H3Event) => {
   };
 };
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
-  errorFormatter: ({ shape, error }) => ({
-    ...shape,
-    data: {
-      ...shape.data,
-      zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
-    },
-  }),
-});
+const t = initTRPC.context<typeof createTRPCContext>().create({});
 
 // Base router and procedure helpers
 export const createTRPCRouter = t.router;
