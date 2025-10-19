@@ -41,6 +41,7 @@ export default defineNuxtConfig({
       databaseUrl: process.env.NUXT_DATABASE_URL!,
       googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID!,
       googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET!,
+      productionDatabaseUrl: process.env.NUXT_PRODUCTION_DATABASE_URL!,
     },
   },
 });
