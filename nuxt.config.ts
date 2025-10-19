@@ -5,7 +5,12 @@ import { fileURLToPath } from "node:url";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["shadcn-nuxt", "@nuxtjs/color-mode"],
+  modules: [
+    "shadcn-nuxt",
+    "@nuxtjs/color-mode",
+    "@pinia/colada-nuxt",
+    "@pinia/nuxt",
+  ],
   colorMode: {
     classSuffix: "",
   },

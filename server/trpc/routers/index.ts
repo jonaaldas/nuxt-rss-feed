@@ -5,19 +5,15 @@ import {
   protectedProcedure,
 } from "../../trpc/init";
 import { z } from "zod";
-import { saveRssFeed } from "../../database/queries/rss";
+import { getRssFeeds, saveRssFeed } from "../../database/queries/rss";
 
 export const appRouter = createTRPCRouter({
-  rss: protectedProcedure.query((ctx) => {
-    console.log(ctx.ctx.session);
-    return ctx.ctx.session;
+  rss: protectedProcedure.query(async ({ ctx }) => {
+    const rssFeeds = await getRssFeeds(ctx.user.id);
+    return { data: rssFeeds, error: null };
   }),
   saveRssFeed: protectedProcedure
-    .input(
-      z.object({
-        url: z.string(),
-      })
-    )
+    .input(z.object({ url: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const user = ctx.user;
       const url = input.url;

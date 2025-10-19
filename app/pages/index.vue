@@ -10,154 +10,147 @@ const router = useRouter();
 const selectedArticle = ref<any>(null);
 const selectedFeed = ref<any>(null);
 
-const res = useFetch("rssFeed", async () => {
-  const { data: rssFeed } = await $trpc.saveRssFeed.mutate({
-    url: "https://www.google.com",
-  });
-  return rssFeed;
+const { data: rssFeeds } = useQuery({
+  key: ["rssFeeds1"],
+  query: async () => {
+    try {
+      const data = await $trpc.rss.query();
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
 });
 
-// const { data: rssFeeds } = useQuery({
-//   key: ["rssFeeds1"],
-//   query: async () => {
-//     try {
-//       const data = await client.rss.$get();
-//       return data.json();
-//     } catch (error) {
-//       throw error;
-//     }
-//   },
-// });
+const articleContent = computed(() => {
+  if (!selectedArticle.value) return null;
 
-// const articleContent = computed(() => {
-//   if (!selectedArticle.value) return null;
+  try {
+    const feedItem = selectedArticle.value;
+    if (feedItem["content:encoded"]) {
+      return feedItem["content:encoded"];
+    }
+    if (feedItem.content) {
+      return feedItem.content;
+    }
+    return feedItem.contentSnippet || null;
+  } catch (error) {
+    return null;
+  }
+});
 
-//   try {
-//     const feedItem = selectedArticle.value;
-//     if (feedItem["content:encoded"]) {
-//       return feedItem["content:encoded"];
-//     }
-//     if (feedItem.content) {
-//       return feedItem.content;
-//     }
-//     return feedItem.contentSnippet || null;
-//   } catch (error) {
-//     return null;
-//   }
-// });
+const navMain = computed(() => {
+  if (!rssFeeds.value || !("data" in rssFeeds.value)) return [];
+  const data = rssFeeds.value.data;
+  return data?.map((feed) => {
+    const feedItems = Array.isArray(feed.feedItems) ? feed.feedItems : [];
+    return {
+      title: feed.title,
+      url: "/rss/",
+      id: feed.id,
+      items: feedItems.map((item: any) => ({
+        title: item.title,
+        url: "/rss/",
+        isActive: selectedArticle.value?.link === item.link,
+        ...item,
+      })),
+    };
+  });
+});
 
-// const navMain = computed(() => {
-//   if (!rssFeeds.value || !("data" in rssFeeds.value)) return [];
-//   const data = rssFeeds.value.data;
-//   return data?.map((feed) => {
-//     const feedItems = Array.isArray(feed.feedItems) ? feed.feedItems : [];
-//     return {
-//       title: feed.title,
-//       url: "/rss/",
-//       id: feed.id,
-//       items: feedItems.map((item: any) => ({
-//         title: item.title,
-//         url: "/rss/",
-//         isActive: selectedArticle.value?.link === item.link,
-//         ...item,
-//       })),
-//     };
-//   });
-// });
+const handleArticleSelect = (item: any) => {
+  selectedArticle.value = item;
+  router.push({
+    query: {
+      feed: selectedFeed.value?.id,
+      article: encodeURIComponent(item.link || item.guid || item.title),
+    },
+  });
+};
 
-// const handleArticleSelect = (item: any) => {
-//   selectedArticle.value = item;
-//   router.push({
-//     query: {
-//       feed: selectedFeed.value?.id,
-//       article: encodeURIComponent(item.link || item.guid || item.title),
-//     },
-//   });
-// };
+const handleFeedSelect = (feed: any) => {
+  selectedFeed.value = feed;
+  selectedArticle.value = null;
+  router.push({
+    query: {
+      feed: feed.id,
+    },
+  });
+};
 
-// const handleFeedSelect = (feed: any) => {
-//   selectedFeed.value = feed;
-//   selectedArticle.value = null;
-//   router.push({
-//     query: {
-//       feed: feed.id,
-//     },
-//   });
-// };
+const selectFeedFromQuery = () => {
+  const feedParam = route.query.feed as string;
+  if (!feedParam || !rssFeeds.value || !("data" in rssFeeds.value)) return;
 
-// const selectFeedFromQuery = () => {
-//   const feedParam = route.query.feed as string;
-//   if (!feedParam || !rssFeeds.value || !("data" in rssFeeds.value)) return;
+  const feed = rssFeeds.value.data.find(
+    (f: any) => f.id === parseInt(feedParam)
+  );
+  if (feed) {
+    selectedFeed.value = feed;
+  }
+};
 
-//   const feed = rssFeeds.value.data.find(
-//     (f: any) => f.id === parseInt(feedParam)
-//   );
-//   if (feed) {
-//     selectedFeed.value = feed;
-//   }
-// };
+const selectArticleFromQuery = () => {
+  const articleParam = route.query.article as string;
+  if (!articleParam || !rssFeeds.value || !("data" in rssFeeds.value)) return;
 
-// const selectArticleFromQuery = () => {
-//   const articleParam = route.query.article as string;
-//   if (!articleParam || !rssFeeds.value || !("data" in rssFeeds.value)) return;
+  const decodedParam = decodeURIComponent(articleParam);
 
-//   const decodedParam = decodeURIComponent(articleParam);
+  for (const feed of rssFeeds.value.data) {
+    const feedItems = Array.isArray(feed.feedItems) ? feed.feedItems : [];
+    const article = feedItems.find(
+      (item: any) =>
+        item.link === decodedParam ||
+        item.guid === decodedParam ||
+        item.title === decodedParam
+    );
 
-//   for (const feed of rssFeeds.value.data) {
-//     const feedItems = Array.isArray(feed.feedItems) ? feed.feedItems : [];
-//     const article = feedItems.find(
-//       (item: any) =>
-//         item.link === decodedParam ||
-//         item.guid === decodedParam ||
-//         item.title === decodedParam
-//     );
+    if (article) {
+      selectedArticle.value = article;
+      selectedFeed.value = feed;
+      break;
+    }
+  }
+};
 
-//     if (article) {
-//       selectedArticle.value = article;
-//       selectedFeed.value = feed;
-//       break;
-//     }
-//   }
-// };
+watch(
+  () => rssFeeds.value,
+  (newValue) => {
+    if (newValue && "data" in newValue) {
+      if (route.query.feed) {
+        selectFeedFromQuery();
+      }
+      if (route.query.article) {
+        selectArticleFromQuery();
+      }
+    }
+  },
+  { immediate: true }
+);
 
-// watch(
-//   () => rssFeeds.value,
-//   (newValue) => {
-//     if (newValue && "data" in newValue) {
-//       if (route.query.feed) {
-//         selectFeedFromQuery();
-//       }
-//       if (route.query.article) {
-//         selectArticleFromQuery();
-//       }
-//     }
-//   },
-//   { immediate: true }
-// );
+watch(
+  () => route.query,
+  (newQuery) => {
+    if (rssFeeds.value && "data" in rssFeeds.value) {
+      if (newQuery.feed) {
+        selectFeedFromQuery();
+      } else {
+        selectedFeed.value = null;
+      }
 
-// watch(
-//   () => route.query,
-//   (newQuery) => {
-//     if (rssFeeds.value && "data" in rssFeeds.value) {
-//       if (newQuery.feed) {
-//         selectFeedFromQuery();
-//       } else {
-//         selectedFeed.value = null;
-//       }
-
-//       if (newQuery.article) {
-//         selectArticleFromQuery();
-//       } else {
-//         selectedArticle.value = null;
-//       }
-//     }
-//   }
-// );
+      if (newQuery.article) {
+        selectArticleFromQuery();
+      } else {
+        selectedArticle.value = null;
+      }
+    }
+  }
+);
 </script>
 
 <template>
   <SidebarProvider>
-    <AppSidebar :navMain="[]" />
+    <AppSidebar :navMain="navMain" />
     <SidebarInset>
       <header
         class="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 justify-between"
