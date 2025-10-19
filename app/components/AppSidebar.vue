@@ -60,7 +60,6 @@ const handleFeedClick = (feed: NavItem) => {
         v-for="item in navMain"
         :key="item.title"
         :title="item.title"
-        default-open
         class="group/collapsible"
       >
         <SidebarGroup class="p-0">
@@ -98,7 +97,7 @@ const handleFeedClick = (feed: NavItem) => {
                 >
                   <SidebarMenuButton
                     :is-active="childItem.isActive"
-                    class="p-3 hover:bg-muted/70 cursor-pointer"
+                    class="p-3 hover:bg-muted/70 cursor-pointer data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary"
                     @click="handleArticleClick(childItem)"
                   >
                     <div class="flex items-center gap-3 w-full">
@@ -107,7 +106,7 @@ const handleFeedClick = (feed: NavItem) => {
                       />
                       <div class="flex-1 min-w-0">
                         <p
-                          class="text-sm truncate font-medium leading-5 text-foreground group-hover:text-primary transition-colors"
+                          class="text-sm truncate font-medium leading-5 text-foreground group-hover:text-primary transition-colors group-data-[active=true]:text-primary group-data-[active=true]:font-semibold"
                         >
                           {{ childItem.title }}
                         </p>
