@@ -1,14 +1,12 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../database/schema";
+const {
+  private: { databaseUrl },
+} = useRuntimeConfig();
 
-const connectionString = process.env.DATABASE_URL!;
-
-// For migrations
-export const migrationClient = postgres(connectionString, { max: 1 });
-
-// For queries
-const queryClient = postgres(connectionString);
+export const migrationClient = postgres(databaseUrl, { max: 1 });
+const queryClient = postgres(databaseUrl);
 export const db = drizzle(queryClient, { schema });
 
 export type Database = typeof db;

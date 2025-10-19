@@ -1,7 +1,8 @@
 import { createAuthClient } from "better-auth/vue";
 
+const {
+  public: { betterAuthUrl },
+} = useRuntimeConfig();
 export const authClient = createAuthClient({
-  baseURL: process.env.BETTER_AUTH_URL! || "http://localhost:9292",
+  baseURL: betterAuthUrl,
 });
-
-export type AuthClient = typeof authClient;

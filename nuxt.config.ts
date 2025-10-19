@@ -32,4 +32,15 @@ export default defineNuxtConfig({
     transpile: ["trpc-nuxt"],
   },
   ssr: false,
+  runtimeConfig: {
+    public: {
+      betterAuthUrl: process.env.NUXT_BETTER_AUTH_URL!,
+    },
+    private: {
+      betterAuthSecret: process.env.NUXT_BETTER_AUTH_SECRET!,
+      databaseUrl: process.env.NUXT_DATABASE_URL!,
+      googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID!,
+      googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET!,
+    },
+  },
 });
