@@ -1,0 +1,11 @@
+ db:
+    image: postgres:17.0
+    hostname: db
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-rss_app}
+      - POSTGRES_USER=${DB_USER:-rss_app}
+      - POSTGRES_DB=${DB_NAME:-rss_app}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
