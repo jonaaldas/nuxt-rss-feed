@@ -1,18 +1,21 @@
 <script lang="ts"></script>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ExternalLink, Calendar, User } from "lucide-vue-next";
+const { $trpc } = useNuxtApp();
 
 const route = useRoute();
 const router = useRouter();
 const selectedArticle = ref<any>(null);
 const selectedFeed = ref<any>(null);
 
-const { $trpc } = useNuxtApp();
-const hello = await $trpc.rss.query();
-console.log(hello);
+const res = useFetch("rssFeed", async () => {
+  const { data: rssFeed } = await $trpc.saveRssFeed.mutate({
+    url: "https://www.google.com",
+  });
+  return rssFeed;
+});
 
 // const { data: rssFeeds } = useQuery({
 //   key: ["rssFeeds1"],

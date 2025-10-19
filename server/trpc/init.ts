@@ -1,25 +1,46 @@
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import type { H3Event } from "h3";
+import { auth } from "../lib/auth";
+import { db } from "../database";
+import { ZodError } from "zod";
+import superjson from "superjson";
 
 export const createTRPCContext = async (event: H3Event) => {
-  /**
-   * @see: https://trpc.io/docs/server/context
-   */
-  return { auth: event.context.auth };
+  const authSession = await auth.api.getSession({
+    headers: event.headers,
+  });
+
+  return {
+    db,
+    session: authSession,
+    user: authSession?.user,
+  };
 };
 
-// Avoid exporting the entire t-object
-// since it's not very descriptive.
-// For instance, the use of a t variable
-// is common in i18n libraries.
-const t = initTRPC.create({
-  /**
-   * @see https://trpc.io/docs/server/data-transformers
-   */
-  // transformer: superjson,
+const t = initTRPC.context<typeof createTRPCContext>().create({
+  transformer: superjson,
+  errorFormatter: ({ shape, error }) => ({
+    ...shape,
+    data: {
+      ...shape.data,
+      zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
+    },
+  }),
 });
 
 // Base router and procedure helpers
 export const createTRPCRouter = t.router;
 export const createCallerFactory = t.createCallerFactory;
 export const baseProcedure = t.procedure;
+
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.user?.id) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+    },
+  });
+});
