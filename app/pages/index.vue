@@ -10,6 +10,10 @@ const router = useRouter();
 const selectedArticle = ref<any>(null);
 const selectedFeed = ref<any>(null);
 
+const { $trpc } = useNuxtApp();
+const hello = await $trpc.rss.query();
+console.log(hello);
+
 // const { data: rssFeeds } = useQuery({
 //   key: ["rssFeeds1"],
 //   query: async () => {

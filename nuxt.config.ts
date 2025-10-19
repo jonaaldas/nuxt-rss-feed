@@ -20,4 +20,7 @@ export default defineNuxtConfig({
   devServer: {
     port: 9292,
   },
+  build: {
+    transpile: ["trpc-nuxt"],
+  },
 });
