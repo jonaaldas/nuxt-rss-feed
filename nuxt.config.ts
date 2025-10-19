@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@pinia/colada-nuxt",
     "@pinia/nuxt",
+    "@vite-pwa/nuxt",
   ],
   colorMode: {
     classSuffix: "",
@@ -32,6 +33,35 @@ export default defineNuxtConfig({
     transpile: ["trpc-nuxt"],
   },
   ssr: false,
+  pwa: {
+    registerType: "autoUpdate",
+    manifest: {
+      name: "RSS Reader",
+      short_name: "RSS",
+      description: "A modern RSS feed reader",
+      theme_color: "#ffffff",
+      icons: [
+        {
+          src: "/pwa.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "/pwa.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
+      ],
+    },
+    workbox: {
+      navigateFallback: "/",
+      cleanupOutdatedCaches: true,
+    },
+    devOptions: {
+      enabled: true,
+      type: "module",
+    },
+  },
   runtimeConfig: {
     public: {
       betterAuthUrl: process.env.NUXT_BETTER_AUTH_URL!,
