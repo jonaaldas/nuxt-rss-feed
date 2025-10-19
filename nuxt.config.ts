@@ -5,7 +5,10 @@ import { fileURLToPath } from "node:url";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["shadcn-nuxt"],
+  modules: ["shadcn-nuxt", "@nuxtjs/color-mode"],
+  colorMode: {
+    classSuffix: "",
+  },
   shadcn: {
     prefix: "",
     componentDir: "./app/components/ui",
