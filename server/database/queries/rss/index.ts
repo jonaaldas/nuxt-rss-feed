@@ -1,6 +1,6 @@
 import { db } from "../../index";
 import { RssColumns, rssFeed, rssFeedInsertSchema } from "../../schema";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 export const getRssFeeds = async (userId: string) => {
   try {
@@ -25,6 +25,26 @@ export const saveRssFeed = async (
       .values(validatedRssFeedValues)
       .returning();
     return { data: newRssFeed, error: null };
+  } catch (error) {
+    console.error(error);
+    return { data: null, error: error };
+  }
+};
+
+export const updateAllFeeds = async (feeds: RssColumns[], userId: string) => {
+  try {
+    let promises: any = [];
+    feeds.forEach(async (feed) => {
+      promises.push(
+        db
+          .update(rssFeed)
+          .set(feed)
+          .where(and(eq(rssFeed.url, feed.url), eq(rssFeed.userId, userId)))
+      );
+    });
+    const res = await Promise.all(promises);
+    console.log(res);
+    return true;
   } catch (error) {
     console.error(error);
     return { data: null, error: error };

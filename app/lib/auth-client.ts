@@ -1,8 +1,4 @@
 import { createAuthClient } from "better-auth/vue";
-
-const {
-  public: { betterAuthUrl },
-} = useRuntimeConfig();
 export const authClient = createAuthClient({
-  baseURL: betterAuthUrl,
+  baseURL: process.env.NUXT_BETTER_AUTH_URL!,
 });

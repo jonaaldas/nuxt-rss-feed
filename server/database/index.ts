@@ -1,9 +1,8 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../database/schema";
-const {
-  private: { databaseUrl },
-} = useRuntimeConfig();
+
+const databaseUrl = process.env.NUXT_DATABASE_URL!;
 
 export const migrationClient = postgres(databaseUrl, { max: 1 });
 const queryClient = postgres(databaseUrl);

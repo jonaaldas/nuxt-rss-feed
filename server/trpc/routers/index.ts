@@ -5,7 +5,11 @@ import {
   protectedProcedure,
 } from "../../trpc/init";
 import { z } from "zod";
-import { getRssFeeds, saveRssFeed } from "../../database/queries/rss";
+import {
+  getRssFeeds,
+  saveRssFeed,
+  updateAllFeeds,
+} from "../../database/queries/rss";
 
 export const appRouter = createTRPCRouter({
   rss: protectedProcedure.query(async ({ ctx }) => {
@@ -34,6 +38,32 @@ export const appRouter = createTRPCRouter({
       }
       return { data: rssFeed, error: null };
     }),
+  refresh: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = ctx.user;
+    const rssFeeds = await getRssFeeds(user.id);
+
+    const feedsURLS = rssFeeds.map((feed) => feed.url);
+
+    const feeds = await Promise.all(
+      feedsURLS.map(async (url) => {
+        const feed = await fetchRssFeed(url);
+        const data = {
+          userId: ctx.user.id,
+          url: url,
+          title: feed.title,
+          link: feed.link,
+          feedUrl: feed.feedUrl,
+          lastBuildDate: new Date(feed.lastBuildDate),
+          feedItems: feed.items,
+          itemCount: feed.items.length,
+        };
+        return data;
+      })
+    );
+    // ctx.wait(updateAllFeeds(feeds, ctx.user.id));
+    updateAllFeeds(feeds, ctx.user.id);
+    return { data: true, error: null };
+  }),
 });
 
 // export type definition of API

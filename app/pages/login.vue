@@ -2,11 +2,14 @@
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
+const email = ref("");
+const password = ref("");
+
 const signInWithGoogle = async () => {
   try {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL: "/dashboard",
     });
   } catch (error) {
     console.error(error);

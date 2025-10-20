@@ -2,8 +2,6 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { H3Event } from "h3";
 import { auth } from "../lib/auth";
 import { db } from "../database";
-import { ZodError } from "zod";
-import superjson from "superjson";
 
 export const createTRPCContext = async (event: H3Event) => {
   const authSession = await auth.api.getSession({
@@ -14,6 +12,7 @@ export const createTRPCContext = async (event: H3Event) => {
     db,
     session: authSession,
     user: authSession?.user,
+    wait: event.waitUntil,
   };
 };
 

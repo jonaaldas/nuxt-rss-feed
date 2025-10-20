@@ -2,6 +2,7 @@
 import type { SidebarProps } from "@/components/ui/sidebar";
 import { ChevronRight, Rss, Calendar, Plus, RefreshCcw } from "lucide-vue-next";
 import SearchForm from "@/components/SearchForm.vue";
+import { useMutation, useQueryCache } from "@pinia/colada";
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,7 +31,36 @@ type NavItem = {
   isActive?: boolean;
 };
 
+const { $trpc } = useNuxtApp();
+const queryCache = useQueryCache();
 const props = defineProps<SidebarProps & { navMain: NavItem[] }>();
+const refreshLoading = ref(false);
+
+const { mutate: refreshFeed } = useMutation({
+  key: ["saveRssFeed"],
+  mutation: async () => {
+    const response = await $trpc.refresh.mutate();
+    if (response.error) {
+      throw new Error(response.error as string);
+    }
+    return response.data;
+  },
+  onMutate: () => {
+    refreshLoading.value = true;
+  },
+  onSuccess: (data) => {
+    refreshLoading.value = false;
+  },
+  onError: (error) => {
+    console.error(error);
+    refreshLoading.value = false;
+    console.log(error);
+  },
+  onSettled: () => {
+    refreshLoading.value = false;
+    queryCache.invalidateQueries({ key: ["rssFeeds1"] });
+  },
+});
 
 const emit = defineEmits<{
   selectArticle: [item: NavItem];
@@ -122,7 +152,7 @@ const handleFeedClick = (feed: NavItem) => {
     </SidebarContent>
     <SidebarFooter class="flex flex-row gap-2">
       <AddModal />
-      <Button variant="secondary" class="w-[15%]">
+      <Button variant="secondary" class="w-[15%]" @click="refreshFeed">
         <RefreshCcw class="w-4 h-4" />
       </Button>
     </SidebarFooter>
