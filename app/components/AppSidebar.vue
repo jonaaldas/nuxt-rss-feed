@@ -86,7 +86,11 @@ const handleFeedClick = (feed: NavItem) => {
       <SearchForm />
     </SidebarHeader>
     <SidebarContent class="gap-3 p-3">
+      <div v-if="loading" class="flex items-center justify-center h-full">
+        <Loader2 class="w-4 h-4 animate-spin" />
+      </div>
       <Collapsible
+        v-else
         v-for="item in navMain"
         :key="item.title"
         :title="item.title"

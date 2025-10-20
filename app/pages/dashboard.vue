@@ -11,8 +11,14 @@ const router = useRouter();
 const selectedArticle = ref<any>(null);
 const selectedFeed = ref<any>(null);
 
-const { data: rssFeeds } = useQuery({
-  key: ["rssFeeds1"],
+const { data: session } = await authClient.getSession();
+
+definePageMeta({
+  middleware: "auth",
+});
+
+const { asyncStatus, data: rssFeeds } = useQuery({
+  key: ["rssFeeds", session?.user?.id as string],
   query: async () => {
     try {
       const data = await $trpc.rss.query();
@@ -162,6 +168,7 @@ const logout = async () => {
 <template>
   <SidebarProvider>
     <AppSidebar
+      :loading="asyncStatus === 'loading'"
       :navMain="navMain"
       @select-article="handleArticleSelect"
       @select-feed="handleFeedSelect"
