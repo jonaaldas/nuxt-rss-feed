@@ -12,14 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-vue-next";
 import { useMutation, useQueryCache } from "@pinia/colada";
 import { ref } from "vue";
-
+import { authClient } from "~/lib/auth-client";
+const { data: session } = await authClient.getSession();
 import { Input } from "@/components/ui/input";
 const { $trpc } = useNuxtApp();
 const url = ref<string>("");
 const queryCache = useQueryCache();
 
 const { mutate: saveRssFeed } = useMutation({
-  key: ["saveRssFeed"],
+  key: ["saveRssFeed", session?.user?.id as string],
   mutation: async ({ url }: { url: string }) => {
     const response = await $trpc.saveRssFeed.mutate({ url });
     if (response.error) {

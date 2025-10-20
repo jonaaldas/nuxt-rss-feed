@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "../components/ui/badge";
 import AddModal from "@/components/add-modal.vue";
+import { authClient } from "~/lib/auth-client";
 type NavItem = {
   title: string;
   url: string;
@@ -35,9 +36,9 @@ const { $trpc } = useNuxtApp();
 const queryCache = useQueryCache();
 const props = defineProps<SidebarProps & { navMain: NavItem[] }>();
 const refreshLoading = ref(false);
-
+const { data: session } = await authClient.getSession();
 const { mutate: refreshFeed } = useMutation({
-  key: ["saveRssFeed"],
+  key: ["saveRssFeed", session?.user?.id as string],
   mutation: async () => {
     const response = await $trpc.refresh.mutate();
     if (response.error) {
@@ -58,7 +59,12 @@ const { mutate: refreshFeed } = useMutation({
   },
   onSettled: () => {
     refreshLoading.value = false;
-    queryCache.invalidateQueries({ key: ["rssFeeds1"] });
+    queryCache.invalidateQueries({
+      key: ["saveRssFeed", session?.user?.id as string],
+    });
+    queryCache.invalidateQueries({
+      key: ["rssFeeds", session?.user?.id as string],
+    });
   },
 });
 
