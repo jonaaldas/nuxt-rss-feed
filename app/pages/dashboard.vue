@@ -2,7 +2,7 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
-import { ExternalLink, Calendar, User } from "lucide-vue-next";
+import { ExternalLink, Calendar, User, Loader2 } from "lucide-vue-next";
 import { useQuery } from "@pinia/colada";
 import { authClient } from "~/lib/auth-client";
 const { $trpc } = useNuxtApp();
@@ -10,7 +10,7 @@ const route = useRoute();
 const router = useRouter();
 const selectedArticle = ref<any>(null);
 const selectedFeed = ref<any>(null);
-
+const refreshFeed = ref(false);
 const { data: session } = await authClient.getSession();
 
 definePageMeta({
@@ -83,6 +83,10 @@ const handleFeedSelect = (feed: any) => {
       feed: feed.id,
     },
   });
+};
+
+const handleFeedRefresh = (value: boolean) => {
+  refreshFeed.value = value;
 };
 
 const selectFeedFromQuery = () => {
@@ -171,6 +175,7 @@ const logout = async () => {
       :loading="asyncStatus === 'loading'"
       :navMain="navMain"
       @select-article="handleArticleSelect"
+      @refresh-feed="handleFeedRefresh"
       @select-feed="handleFeedSelect"
     />
     <SidebarInset>
@@ -183,14 +188,14 @@ const logout = async () => {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem class="hidden md:block">
-                <BreadcrumbLink href="/">RSS Feeds</BreadcrumbLink>
+                <BreadcrumbLink href="/dashboard">RSS Feeds</BreadcrumbLink>
               </BreadcrumbItem>
               <template v-if="selectedFeed">
                 <BreadcrumbSeparator class="hidden md:block" />
                 <BreadcrumbItem class="hidden md:block">
                   <BreadcrumbLink
                     v-if="selectedArticle"
-                    :href="`/?feed=${selectedFeed.id}`"
+                    :href="`/dashboard?feed=${selectedFeed.id}`"
                   >
                     {{ selectedFeed.title }}
                   </BreadcrumbLink>
@@ -215,11 +220,13 @@ const logout = async () => {
           <Button variant="outline" size="sm" @click="logout">Logout</Button>
         </div>
       </header>
-      <!-- <div class="flex flex-1 flex-col gap-4 p-4 lg:mx-72">
-        <Input type="text" placeholder="Enter RSS URL" v-model="url" />
-        <Button @click="saveRss(url)">Add</Button>
-      </div> -->
-      <div class="w-full max-w-4xl mx-auto px-4 py-8">
+      <div
+        v-if="refreshFeed"
+        class="flex items-center justify-center h-full opacity-50"
+      >
+        <Loader2 class="w-4 h-4 animate-spin" />
+      </div>
+      <div v-else class="w-full max-w-4xl mx-auto px-4 py-8">
         <div
           v-if="!selectedFeed && !selectedArticle"
           class="text-center text-muted-foreground py-20"

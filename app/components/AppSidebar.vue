@@ -1,6 +1,13 @@
 <script setup lang="ts">
+import { useFuse } from "@vueuse/integrations/useFuse";
 import type { SidebarProps } from "@/components/ui/sidebar";
-import { ChevronRight, Rss, Calendar, Plus, RefreshCcw } from "lucide-vue-next";
+import {
+  ChevronRight,
+  Rss,
+  Calendar,
+  RefreshCcw,
+  Loader2,
+} from "lucide-vue-next";
 import SearchForm from "@/components/SearchForm.vue";
 import { useMutation, useQueryCache } from "@pinia/colada";
 import {
@@ -25,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "../components/ui/badge";
 import AddModal from "@/components/add-modal.vue";
 import { authClient } from "~/lib/auth-client";
+
 type NavItem = {
   title: string;
   url: string;
@@ -35,9 +43,9 @@ type NavItem = {
 const { $trpc } = useNuxtApp();
 const queryCache = useQueryCache();
 const props = defineProps<SidebarProps & { navMain: NavItem[] }>();
-const refreshLoading = ref(false);
 const { data: session } = await authClient.getSession();
-const { mutate: refreshFeed } = useMutation({
+
+const { mutate: refreshFeed, asyncStatus: refreshLoading } = useMutation({
   key: ["saveRssFeed", session?.user?.id as string],
   mutation: async () => {
     const response = await $trpc.refresh.mutate();
@@ -47,18 +55,15 @@ const { mutate: refreshFeed } = useMutation({
     return response.data;
   },
   onMutate: () => {
-    refreshLoading.value = true;
+    emit("refreshFeed", true);
   },
   onSuccess: (data) => {
-    refreshLoading.value = false;
+    emit("refreshFeed", false);
   },
   onError: (error) => {
     console.error(error);
-    refreshLoading.value = false;
-    console.log(error);
   },
   onSettled: () => {
-    refreshLoading.value = false;
     queryCache.invalidateQueries({
       key: ["saveRssFeed", session?.user?.id as string],
     });
@@ -71,6 +76,7 @@ const { mutate: refreshFeed } = useMutation({
 const emit = defineEmits<{
   selectArticle: [item: NavItem];
   selectFeed: [feed: NavItem];
+  refreshFeed: [refresh: boolean];
 }>();
 
 const handleArticleClick = (item: NavItem) => {
@@ -80,6 +86,50 @@ const handleArticleClick = (item: NavItem) => {
 const handleFeedClick = (feed: NavItem) => {
   emit("selectFeed", feed);
 };
+
+const handleFeedRefresh = () => {
+  emit("refreshFeed", true);
+};
+
+const data = [
+  "John Smith",
+  "John Doe",
+  "Jane Doe",
+  "Phillip Green",
+  "Peter Brown",
+];
+
+const input = shallowRef("");
+const searching = ref(false);
+const sideBarData = ref<NavItem[]>(props.navMain);
+
+const handleSearchInput = (value: string) => {
+  const options = {
+    fuseOptions: {
+      includeScore: true,
+      keys: ["items.title"],
+      includeMatches: true,
+    },
+  };
+  input.value = value;
+  const { results } = useFuse(input.value, props.navMain, options);
+  console.log(results.value);
+  sideBarData.value = results.value.map(
+    (item: { item: NavItem; matches: [] }) => {
+      return {
+        item: item.item,
+      };
+    }
+  );
+};
+
+const searchResults = computed(() => {
+  if (input.value) {
+    return sideBarData.value;
+  } else {
+    return props.navMain;
+  }
+});
 </script>
 
 <template>
@@ -89,15 +139,18 @@ const handleFeedClick = (feed: NavItem) => {
         <Rss class="w-6 h-6 text-primary" />
         <h2 class="text-lg font-semibold">RSS Feeds</h2>
       </div>
-      <SearchForm />
+      <SearchForm @input="handleSearchInput" />
     </SidebarHeader>
     <SidebarContent class="gap-3 p-3">
-      <div v-if="loading" class="flex items-center justify-center h-full">
+      <div
+        v-if="refreshLoading === 'loading'"
+        class="flex items-center justify-center h-full opacity-50"
+      >
         <Loader2 class="w-4 h-4 animate-spin" />
       </div>
       <Collapsible
         v-else
-        v-for="item in navMain"
+        v-for="item in searchResults"
         :key="item.title"
         :title="item.title"
         class="group/collapsible"
