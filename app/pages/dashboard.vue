@@ -1,10 +1,9 @@
-<script lang="ts"></script>
-
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import { ExternalLink, Calendar, User, Loader2 } from "lucide-vue-next";
 import { useQuery } from "@pinia/colada";
 import { authClient } from "~/lib/auth-client";
+
 const { $trpc } = useNuxtApp();
 const route = useRoute();
 const router = useRouter();
@@ -76,7 +75,11 @@ const handleArticleSelect = (item: any) => {
 };
 
 const handleFeedSelect = (feed: any) => {
-  selectedFeed.value = feed;
+  const transformedFeed = navMain.value.find((f: any) => f.id === feed.id) || {
+    ...feed,
+    items: Array.isArray(feed.feedItems) ? feed.feedItems : [],
+  };
+  selectedFeed.value = transformedFeed;
   selectedArticle.value = null;
   router.push({
     query: {
@@ -97,7 +100,13 @@ const selectFeedFromQuery = () => {
     (f: any) => f.id === parseInt(feedParam)
   );
   if (feed) {
-    selectedFeed.value = feed;
+    const transformedFeed = navMain.value.find(
+      (f: any) => f.id === feed.id
+    ) || {
+      ...feed,
+      items: Array.isArray(feed.feedItems) ? feed.feedItems : [],
+    };
+    selectedFeed.value = transformedFeed;
   }
 };
 
@@ -118,7 +127,13 @@ const selectArticleFromQuery = () => {
 
     if (article) {
       selectedArticle.value = article;
-      selectedFeed.value = feed;
+      const transformedFeed = navMain.value.find(
+        (f: any) => f.id === feed.id
+      ) || {
+        ...feed,
+        items: feedItems,
+      };
+      selectedFeed.value = transformedFeed;
       break;
     }
   }
@@ -167,6 +182,21 @@ const logout = async () => {
     },
   });
 };
+
+const navigateToHome = () => {
+  selectedFeed.value = null;
+  selectedArticle.value = null;
+  router.push("/dashboard");
+};
+
+const navigateToFeed = (feedId: number) => {
+  selectedArticle.value = null;
+  router.push({
+    query: {
+      feed: feedId,
+    },
+  });
+};
 </script>
 
 <template>
@@ -188,14 +218,22 @@ const logout = async () => {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem class="hidden md:block">
-                <BreadcrumbLink href="/dashboard">RSS Feeds</BreadcrumbLink>
+                <BreadcrumbLink
+                  as="button"
+                  @click="navigateToHome"
+                  class="cursor-pointer"
+                >
+                  RSS Feeds </BreadcrumbLink
+                >``
               </BreadcrumbItem>
               <template v-if="selectedFeed">
                 <BreadcrumbSeparator class="hidden md:block" />
                 <BreadcrumbItem class="hidden md:block">
                   <BreadcrumbLink
                     v-if="selectedArticle"
-                    :href="`/dashboard?feed=${selectedFeed.id}`"
+                    as="button"
+                    @click="navigateToFeed(selectedFeed.id)"
+                    class="cursor-pointer"
                   >
                     {{ selectedFeed.title }}
                   </BreadcrumbLink>
@@ -226,15 +264,16 @@ const logout = async () => {
       >
         <Loader2 class="w-4 h-4 animate-spin" />
       </div>
-      <div v-else class="w-full max-w-4xl mx-auto px-4 py-8">
-        <div
+      <div
+        v-else
+        class="w-full mx-auto px-4 py-8"
+        :class="!selectedFeed && !selectedArticle ? 'max-w-7xl' : 'max-w-4xl'"
+      >
+        <FeedsGrid
           v-if="!selectedFeed && !selectedArticle"
-          class="text-center text-muted-foreground py-20"
-        >
-          <p class="text-lg">
-            Select a feed or article from the sidebar to read
-          </p>
-        </div>
+          :feeds="rssFeeds?.data || []"
+          @select-feed="handleFeedSelect"
+        />
 
         <div v-else-if="selectedFeed && !selectedArticle" class="space-y-6">
           <div class="mb-8">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toast } from "vue-sonner";
 import { useFuse } from "@vueuse/integrations/useFuse";
 import type { SidebarProps } from "@/components/ui/sidebar";
 import {
@@ -59,9 +60,13 @@ const { mutate: refreshFeed, asyncStatus: refreshLoading } = useMutation({
   },
   onSuccess: (data) => {
     emit("refreshFeed", false);
+    toast("Feeds refreshed successfully");
   },
   onError: (error) => {
     console.error(error);
+    toast.error("Failed to refresh feeds", {
+      description: error.message,
+    });
   },
   onSettled: () => {
     queryCache.invalidateQueries({
