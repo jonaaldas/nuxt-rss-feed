@@ -97,3 +97,4 @@ export const rssFeedInsertSchema = createInsertSchema(rssFeed).omit({
 });
 
 export type RssColumns = typeof rssFeed.$inferInsert;
+export type RssFeedSelectSchema = typeof rssFeed.$inferSelect;

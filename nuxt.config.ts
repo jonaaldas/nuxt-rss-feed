@@ -65,4 +65,18 @@ export default defineNuxtConfig({
       productionDatabaseUrl: process.env.NUXT_PRODUCTION_DATABASE_URL!,
     },
   },
+  nitro: {
+    devStorage: {
+      cache: {
+        driver: "fs",
+        base: "./cache",
+      },
+    },
+    storage: {
+      cache: {
+        driver: "redis",
+        base: process.env.NUXT_REDIS_URL,
+      },
+    },
+  },
 });

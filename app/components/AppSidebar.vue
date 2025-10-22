@@ -32,13 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "../components/ui/badge";
 import AddModal from "@/components/add-modal.vue";
-
-type NavItem = {
-    title: string;
-    url: string;
-    items?: NavItem[];
-    isActive?: boolean;
-};
+import type NavItem from "../../types/rss";
 
 const { $trpc } = useNuxtApp();
 const queryCache = useQueryCache();

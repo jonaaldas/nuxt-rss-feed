@@ -1,13 +1,22 @@
 import { db } from "../../index";
 import { RssColumns, rssFeed, rssFeedInsertSchema } from "../../schema";
 import { and, eq, inArray } from "drizzle-orm";
+import { get, set } from "../../../lib/redis";
 
 export const getRssFeeds = async (userId: string) => {
   try {
+    const cachedFeeds = await get(`feed:${userId}`);
+    if (cachedFeeds) {
+      return cachedFeeds;
+    }
+
     const rssFeeds = await db
       .select()
       .from(rssFeed)
       .where(eq(rssFeed.userId, userId));
+
+    await set(`feed:${userId}`, rssFeeds);
+
     return rssFeeds;
   } catch (error) {
     console.error(error);
@@ -16,7 +25,7 @@ export const getRssFeeds = async (userId: string) => {
 };
 
 export const saveRssFeed = async (
-  rssFeedValues: Omit<RssColumns, "createdAt" | "updatedAt">
+  rssFeedValues: Omit<RssColumns, "createdAt" | "updatedAt">,
 ) => {
   const validatedRssFeedValues = rssFeedInsertSchema.parse(rssFeedValues);
   try {
@@ -39,7 +48,7 @@ export const updateAllFeeds = async (feeds: RssColumns[], userId: string) => {
         db
           .update(rssFeed)
           .set(feed)
-          .where(and(eq(rssFeed.url, feed.url), eq(rssFeed.userId, userId)))
+          .where(and(eq(rssFeed.url, feed.url), eq(rssFeed.userId, userId))),
       );
     });
     const res = await Promise.all(promises);
