@@ -226,8 +226,8 @@ const navigateToFeed = (feedId: number) => {
                                     @click="navigateToHome"
                                     class="cursor-pointer"
                                 >
-                                    RSS Feeds </BreadcrumbLink
-                                >``
+                                    RSS Feeds
+                                </BreadcrumbLink>
                             </BreadcrumbItem>
                             <template v-if="selectedFeed">
                                 <BreadcrumbSeparator class="hidden md:block" />

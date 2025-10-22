@@ -74,7 +74,7 @@ export default defineNuxtConfig({
     },
     storage: {
       cache: {
-        driver: "redis",
+        driver: "upstash",
         base: process.env.NUXT_REDIS_URL,
       },
     },
