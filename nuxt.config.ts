@@ -1,24 +1,29 @@
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { fileURLToPath } from "node:url";
-// <script
-//   defer
-//   src="https://umami-production-772f.up.railway.app/script.js"
-//   data-website-id="91f3aa7f-b2a0-4ce5-a388-db6824353524"
-// ></script>;
+
+const env = process.env.NODE_ENV;
+const isProduction = env === "production";
+const script = isProduction
+  ? [
+      {
+        defer: true,
+        src: isProduction
+          ? "https://umami-production-772f.up.railway.app/script.js"
+          : "",
+        "data-website-id": "91f3aa7f-b2a0-4ce5-a388-db6824353524",
+      },
+    ]
+  : [];
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   app: {
     head: {
-      script: [
-        {
-          defer: true,
-          src: "https://umami-production-772f.up.railway.app/script.js",
-          "data-website-id": "91f3aa7f-b2a0-4ce5-a388-db6824353524",
-        },
-      ],
+      script,
     },
+    pageTransition: { name: "page", mode: "out-in" },
   },
   modules: [
     "shadcn-nuxt",
@@ -47,6 +52,7 @@ export default defineNuxtConfig({
   build: {
     transpile: ["trpc-nuxt"],
   },
+  ssr: false,
   runtimeConfig: {
     public: {
       betterAuthUrl: process.env.NUXT_BETTER_AUTH_URL!,

@@ -1,9 +1,5 @@
 import { fetchRssFeed } from "~~/server/lib/rss";
-import {
-  baseProcedure,
-  createTRPCRouter,
-  protectedProcedure,
-} from "../../trpc/init";
+import { createTRPCRouter, protectedProcedure } from "../../trpc/init";
 import { z } from "zod";
 import {
   getRssFeeds,

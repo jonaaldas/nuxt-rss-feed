@@ -1,4 +1,5 @@
 import { authClient } from "~/lib/auth-client";
+import { useAuthStore } from "~/stores/auth";
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
   if (import.meta.client) {
@@ -6,5 +7,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (!session) {
       return navigateTo("/login");
     }
+
+    const authStore = useAuthStore();
+    authStore.session = session;
   }
 });
