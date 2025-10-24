@@ -13,7 +13,7 @@ interface FeedItem {
 }
 
 interface Feed {
-  id: number;
+  id: string;
   title: string;
   url: string;
   feedItems?: FeedItem[];

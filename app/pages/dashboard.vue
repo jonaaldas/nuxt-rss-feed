@@ -270,9 +270,10 @@ const navigateToFeed = (feedId: number) => {
         class="w-full mx-auto px-4 py-8"
         :class="!selectedFeed && !selectedArticle ? 'max-w-7xl' : 'max-w-4xl'"
       >
+        <!-- TODO FIX THIS TYPE CANT HAVE ANY! -->
         <FeedsGrid
           v-if="!selectedFeed && !selectedArticle"
-          :feeds="rssFeeds?.data || []"
+          :feeds="rssFeeds?.data as any[]"
           @select-feed="handleFeedSelect"
         />
 
