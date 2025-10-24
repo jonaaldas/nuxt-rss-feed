@@ -14,12 +14,14 @@ import { useMutation, useQueryCache } from "@pinia/colada";
 import { ref } from "vue";
 const { session } = useAuthStore();
 import { Input } from "@/components/ui/input";
+import { toast } from "vue-sonner";
 const { $trpc } = useNuxtApp();
 const url = ref<string>("");
+const isOpen = ref<boolean>(false);
 const queryCache = useQueryCache();
 
-const { mutate: saveRssFeed } = useMutation({
-  key: ["saveRssFeed", session?.user?.id as string],
+const { mutate: saveRssFeed, asyncStatus: saveRssFeedLoading } = useMutation({
+  key: ["rssFeeds", session?.user?.id as string],
   mutation: async ({ url }: { url: string }) => {
     const response = await $trpc.saveRssFeed.mutate({ url });
     if (response.error) {
@@ -27,23 +29,36 @@ const { mutate: saveRssFeed } = useMutation({
     }
     return response.data;
   },
+
   onSuccess: (data) => {
     url.value = ""; // Clear the input after success
+    isOpen.value = false; // Close the dialog
   },
   onError: (error) => {
     console.error(error);
   },
   onSettled: () => {
-    queryCache.invalidateQueries({ key: ["rssFeeds1"] });
+    queryCache.invalidateQueries({
+      key: ["rssFeeds", session?.user?.id as string],
+    });
   },
 });
 </script>
 
 <template>
-  <Dialog>
+  <Dialog v-model:open="isOpen">
     <DialogTrigger as-child>
       <Button variant="outline" class="w-[85%]">
-        <Plus class="w-4 h-4" />
+        <Icon
+          v-if="saveRssFeedLoading == 'idle'"
+          name="heroicons:plus"
+          class="w-4 h-4"
+        />
+        <Icon
+          v-else
+          name="svg-spinners:180-ring"
+          class="w-4 h-4 animate-spin"
+        />
         Add a new feed
       </Button>
     </DialogTrigger>
@@ -59,9 +74,18 @@ const { mutate: saveRssFeed } = useMutation({
         <Button
           variant="secondary"
           @click="() => saveRssFeed({ url })"
-          :disabled="!url"
+          :disabled="!url || saveRssFeedLoading !== 'idle'"
         >
-          <Plus class="w-4 h-4" />
+          <Icon
+            v-if="saveRssFeedLoading == 'idle'"
+            name="heroicons:plus"
+            class="w-4 h-4"
+          />
+          <Icon
+            v-else
+            name="svg-spinners:180-ring"
+            class="w-4 h-4 animate-spin"
+          />
           Add feed
         </Button>
       </DialogFooter>

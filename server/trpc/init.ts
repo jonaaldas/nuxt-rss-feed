@@ -12,7 +12,7 @@ export const createTRPCContext = async (event: H3Event) => {
     db,
     session: authSession,
     user: authSession?.user,
-    wait: event.waitUntil,
+    event: event,
   };
 };
 

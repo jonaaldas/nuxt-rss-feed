@@ -17,3 +17,8 @@ export const set = async (key: string, value: RssFeedSelectSchema[]) => {
   const str = getKey(key);
   await useStorage<RssFeedSelectSchema[]>("cache").setItem(str, value);
 };
+
+export const del = async (key: string) => {
+  const str = getKey(key);
+  await useStorage("cache").del(str);
+};
