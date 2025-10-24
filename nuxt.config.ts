@@ -15,6 +15,7 @@ const script = isProduction
       },
     ]
   : [];
+console.log(process.env.NUXT_REDIS_URL);
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -31,6 +32,7 @@ export default defineNuxtConfig({
     "@pinia/colada-nuxt",
     "@pinia/nuxt",
     "@vueuse/nuxt",
+    "@nuxt/icon",
   ],
   colorMode: {
     classSuffix: "",
@@ -75,7 +77,7 @@ export default defineNuxtConfig({
     storage: {
       cache: {
         driver: "upstash",
-        base: process.env.NUXT_REDIS_URL,
+        url: process.env.NUXT_REDIS_URL,
       },
     },
   },

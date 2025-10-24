@@ -141,8 +141,7 @@ const searchResults = computed(() => {
     <Sidebar v-bind="props" class="border-r border-border/50">
         <SidebarHeader class="border-b border-border/50 p-4">
             <div class="flex items-center gap-2 mb-4">
-                <Rss class="w-6 h-6 text-primary" />
-                <h2 class="text-lg font-semibold">RSS Feeds</h2>
+                <h1 class="text-2xl font-bold">📕 RSS Reader</h1>
             </div>
             <SearchForm @input="handleSearchInput" />
         </SidebarHeader>

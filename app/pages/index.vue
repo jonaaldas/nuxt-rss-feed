@@ -9,8 +9,8 @@ watchEffect(() => {
     }
 });
 
-const navigateToLogin = () => {
-    router.push("/login");
+const navigateToLogin = async () => {
+    await navigateTo("/login");
 };
 </script>
 
@@ -22,7 +22,7 @@ const navigateToLogin = () => {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <Rss class="w-8 h-8 text-primary" />
-                        <h1 class="text-2xl font-bold">RSS Reader</h1>
+                        <h1 class="text-2xl font-bold">📕 RSS Reader</h1>
                     </div>
                     <div class="flex items-center gap-4">
                         <ThemeSwitcher />
@@ -47,8 +47,7 @@ const navigateToLogin = () => {
                     class="text-xl md:text-2xl text-muted-foreground mb-10 leading-relaxed"
                 >
                     A simple, elegant RSS reader that helps you follow blogs,
-                    news sites, and podcasts—all in one place. No algorithms, no
-                    distractions.
+                    news sites, and podcasts—all in one place.
                 </p>
                 <div class="flex items-center justify-center gap-4">
                     <Button @click="navigateToLogin" size="lg" class="text-lg">
@@ -69,9 +68,9 @@ const navigateToLogin = () => {
                 <div class="grid md:grid-cols-3 gap-12">
                     <div class="text-center">
                         <div
-                            class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                            class="w-16 h-16 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6"
                         >
-                            <Rss class="w-8 h-8 text-primary" />
+                            <span class="text-4xl"> 📊 </span>
                         </div>
                         <h4 class="text-xl font-semibold mb-3">
                             Easy Feed Management
@@ -84,9 +83,9 @@ const navigateToLogin = () => {
 
                     <div class="text-center">
                         <div
-                            class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                            class="w-16 h-16 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6"
                         >
-                            <Search class="w-8 h-8 text-primary" />
+                            <span class="text-4xl">🔍</span>
                         </div>
                         <h4 class="text-xl font-semibold mb-3">
                             Powerful Search
@@ -99,9 +98,9 @@ const navigateToLogin = () => {
 
                     <div class="text-center">
                         <div
-                            class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                            class="w-16 h-16 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6"
                         >
-                            <Zap class="w-8 h-8 text-primary" />
+                            <span class="text-4xl">🔔</span>
                         </div>
                         <h4 class="text-xl font-semibold mb-3">Stay Updated</h4>
                         <p class="text-muted-foreground leading-relaxed">
@@ -135,7 +134,16 @@ const navigateToLogin = () => {
         <footer class="border-t border-border/40 mt-20">
             <div class="container mx-auto px-6 py-8">
                 <div class="text-center text-muted-foreground">
-                    <p>&copy; 2024 RSS Reader. Built with Nuxt & tRPC.</p>
+                    <p>
+                        &copy; 2025 Build by
+                        <NuxtLink
+                            target="_blank"
+                            :external="true"
+                            to="https://aldas.dev"
+                            >Aldas</NuxtLink
+                        >
+                        🚀.
+                    </p>
                 </div>
             </div>
         </footer>
