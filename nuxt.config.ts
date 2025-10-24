@@ -78,6 +78,7 @@ export default defineNuxtConfig({
       cache: {
         driver: "upstash",
         url: process.env.NUXT_REDIS_URL,
+        token: process.env.NUXT_REDIS_TOKEN,
       },
     },
   },
