@@ -383,7 +383,8 @@ const navigateToFeed = (feedId: number) => {
             </div>
             <ReadTime
               :total-words="
-                selectedArticle['content:encodedSnippet']?.split(' ').length
+                selectedArticle['content:encodedSnippet']?.split(' ').length ||
+                0
               "
             />
           </div>
