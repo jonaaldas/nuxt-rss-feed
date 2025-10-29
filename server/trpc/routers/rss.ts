@@ -8,8 +8,9 @@ import {
   updateAllFeeds,
 } from "../../database/queries/rss";
 import { del } from "../../lib/redis";
+import { RssFeedItem } from "~~/types/rss";
 
-export const appRouter = createTRPCRouter({
+export const rssRouter = createTRPCRouter({
   rss: protectedProcedure.query(async ({ ctx }) => {
     const rssFeeds = await getRssFeeds(ctx.user.id);
     return { data: rssFeeds, error: null };
@@ -27,7 +28,7 @@ export const appRouter = createTRPCRouter({
         link: feed.link,
         feedUrl: feed.feedUrl,
         lastBuildDate: new Date(feed.lastBuildDate),
-        feedItems: feed.items,
+        feedItems: feed.items as RssFeedItem[],
         itemCount: feed.items.length,
       };
       const { data: rssFeed, error } = await saveRssFeed(
@@ -56,7 +57,7 @@ export const appRouter = createTRPCRouter({
           link: feed.link,
           feedUrl: feed.feedUrl,
           lastBuildDate: new Date(feed.lastBuildDate),
-          feedItems: feed.items,
+          feedItems: feed.items as RssFeedItem[],
           itemCount: feed.items.length,
         };
         return data;
@@ -78,4 +79,4 @@ export const appRouter = createTRPCRouter({
 });
 
 // export type definition of API
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof rssRouter;

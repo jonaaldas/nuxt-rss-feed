@@ -5,8 +5,16 @@ import {
   jsonb,
   integer,
   boolean,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { createSelectSchema, createInsertSchema } from "drizzle-zod";
+import type { RssFeedItem } from "../../types/rss";
+import {
+  createSelectSchema,
+  createInsertSchema,
+  createUpdateSchema,
+} from "drizzle-zod";
+import { eq } from "drizzle-orm";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -81,7 +89,7 @@ export const rssFeed = pgTable("rss_feed", {
   feedUrl: text("feed_url").notNull(),
   lastBuildDate: timestamp("last_build_date").notNull(),
   itemCount: integer("item_count").default(0).notNull(),
-  feedItems: jsonb("feed_items").notNull(),
+  feedItems: jsonb("feed_items").notNull().$type<RssFeedItem[]>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -95,6 +103,52 @@ export const rssFeedInsertSchema = createInsertSchema(rssFeed).omit({
   createdAt: true,
   updatedAt: true,
 });
+export const rssFeedUpdateSchema = createUpdateSchema(rssFeed).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type RssColumns = typeof rssFeed.$inferInsert;
 export type RssFeedSelectSchema = typeof rssFeed.$inferSelect;
+export type RssFeedUpdateSchema = typeof rssFeedUpdateSchema;
+
+export const favoriteArticle = pgTable(
+  "favorite_article",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    rssFeedItemsGuid: text("rss_feed_items_guid").notNull(),
+    articleSnapshot: jsonb("article_snapshot").$type<RssFeedItem>(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("favorite_article_user_guid_unique").on(
+      table.userId,
+      table.rssFeedItemsGuid
+    ),
+    index("favorite_article_user_id_index").on(table.userId),
+    index("favorite_article_rss_feed_items_guid_index").on(
+      table.rssFeedItemsGuid
+    ),
+  ]
+);
+export const favoriteArticleSelectSchema = createSelectSchema(favoriteArticle);
+export const favoriteArticleInsertSchema = createInsertSchema(
+  favoriteArticle
+).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type FavoriteArticleColumns = typeof favoriteArticle.$inferInsert;
+export type FavoriteArticleSelectSchema = typeof favoriteArticle.$inferSelect;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
-import { ExternalLink, Calendar, User, Loader2 } from "lucide-vue-next";
-import { useQuery } from "@pinia/colada";
-import { authClient } from "~/lib/auth-client";
+import { useRoute, useRouter } from 'vue-router';
+import { ExternalLink, Calendar, User, Loader2 } from 'lucide-vue-next';
+import { useQuery } from '@pinia/colada';
+import { authClient } from '~/lib/auth-client';
 
 const { $trpc } = useNuxtApp();
 const route = useRoute();
@@ -11,14 +11,14 @@ const selectedArticle = ref<any>(null);
 const selectedFeed = ref<any>(null);
 const refreshFeed = ref(false);
 const { session } = useAuthStore();
-const userId = computed(() => session?.user?.id ?? "");
+const userId = computed(() => session?.user?.id ?? '');
 
 definePageMeta({
-  middleware: "auth",
+  middleware: 'auth',
 });
 
 const { asyncStatus, data: rssFeeds } = useQuery({
-  key: () => ["rssFeeds", userId.value],
+  key: () => ['rssFeeds', userId.value],
   query: async () => {
     try {
       const data = await $trpc.rss.query();
@@ -35,8 +35,8 @@ const articleContent = computed(() => {
 
   try {
     const feedItem = selectedArticle.value;
-    if (feedItem["content:encoded"]) {
-      return feedItem["content:encoded"];
+    if (feedItem['content:encoded']) {
+      return feedItem['content:encoded'];
     }
     if (feedItem.content) {
       return feedItem.content;
@@ -48,17 +48,17 @@ const articleContent = computed(() => {
 });
 
 const navMain = computed(() => {
-  if (!rssFeeds.value || !("data" in rssFeeds.value)) return [];
+  if (!rssFeeds.value || !('data' in rssFeeds.value)) return [];
   const data = rssFeeds.value.data;
   return data?.map((feed) => {
     const feedItems = Array.isArray(feed.feedItems) ? feed.feedItems : [];
     return {
       title: feed.title,
-      url: "/rss/",
+      url: '/rss/',
       id: feed.id,
       items: feedItems.map((item: any) => ({
         title: item.title,
-        url: "/rss/",
+        url: '/rss/',
         isActive: selectedArticle.value?.link === item.link,
         ...item,
       })),
@@ -96,14 +96,14 @@ const handleFeedRefresh = (value: boolean) => {
 
 const selectFeedFromQuery = () => {
   const feedParam = route.query.feed as string;
-  if (!feedParam || !rssFeeds.value || !("data" in rssFeeds.value)) return;
+  if (!feedParam || !rssFeeds.value || !('data' in rssFeeds.value)) return;
 
   const feed = rssFeeds.value.data.find(
-    (f: any) => f.id === parseInt(feedParam)
+    (f: any) => f.id === parseInt(feedParam),
   );
   if (feed) {
     const transformedFeed = navMain.value.find(
-      (f: any) => f.id === feed.id
+      (f: any) => f.id === feed.id,
     ) || {
       ...feed,
       items: Array.isArray(feed.feedItems) ? feed.feedItems : [],
@@ -114,7 +114,7 @@ const selectFeedFromQuery = () => {
 
 const selectArticleFromQuery = () => {
   const articleParam = route.query.article as string;
-  if (!articleParam || !rssFeeds.value || !("data" in rssFeeds.value)) return;
+  if (!articleParam || !rssFeeds.value || !('data' in rssFeeds.value)) return;
 
   const decodedParam = decodeURIComponent(articleParam);
 
@@ -124,13 +124,13 @@ const selectArticleFromQuery = () => {
       (item: any) =>
         item.link === decodedParam ||
         item.guid === decodedParam ||
-        item.title === decodedParam
+        item.title === decodedParam,
     );
 
     if (article) {
       selectedArticle.value = article;
       const transformedFeed = navMain.value.find(
-        (f: any) => f.id === feed.id
+        (f: any) => f.id === feed.id,
       ) || {
         ...feed,
         items: feedItems,
@@ -144,7 +144,7 @@ const selectArticleFromQuery = () => {
 watch(
   () => rssFeeds.value,
   (newValue) => {
-    if (newValue && "data" in newValue) {
+    if (newValue && 'data' in newValue) {
       if (route.query.feed) {
         selectFeedFromQuery();
       }
@@ -153,13 +153,13 @@ watch(
       }
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
   () => route.query,
   (newQuery) => {
-    if (rssFeeds.value && "data" in rssFeeds.value) {
+    if (rssFeeds.value && 'data' in rssFeeds.value) {
       if (newQuery.feed) {
         selectFeedFromQuery();
       } else {
@@ -172,7 +172,7 @@ watch(
         selectedArticle.value = null;
       }
     }
-  }
+  },
 );
 
 const logout = async () => {
@@ -180,19 +180,19 @@ const logout = async () => {
   if (error) {
     console.error(error);
   }
-  await navigateTo("/login");
+  await navigateTo('/login');
 };
 
 const navigateToHome = () => {
   selectedFeed.value = null;
   selectedArticle.value = null;
-  navigateTo("/dashboard");
+  navigateTo('/dashboard');
 };
 
 const navigateToFeed = (feedId: number) => {
   selectedArticle.value = null;
   navigateTo({
-    path: "/dashboard",
+    path: '/dashboard',
     query: {
       feed: feedId,
     },
@@ -207,12 +207,10 @@ const navigateToFeed = (feedId: number) => {
       :navMain="navMain"
       @select-article="handleArticleSelect"
       @refresh-feed="handleFeedRefresh"
-      @select-feed="handleFeedSelect"
-    />
+      @select-feed="handleFeedSelect" />
     <SidebarInset>
       <header
-        class="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 justify-between"
-      >
+        class="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 justify-between">
         <div class="flex items-center gap-2">
           <SidebarTrigger class="-ml-1" />
           <Separator orientation="vertical" class="mr-2 h-4" />
@@ -222,8 +220,7 @@ const navigateToFeed = (feedId: number) => {
                 <BreadcrumbLink
                   as="button"
                   @click="navigateToHome"
-                  class="cursor-pointer"
-                >
+                  class="cursor-pointer">
                   RSS Feeds
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -234,8 +231,7 @@ const navigateToFeed = (feedId: number) => {
                     v-if="selectedArticle"
                     as="button"
                     @click="navigateToFeed(selectedFeed.id)"
-                    class="cursor-pointer"
-                  >
+                    class="cursor-pointer">
                     {{ selectedFeed.title }}
                   </BreadcrumbLink>
                   <BreadcrumbPage v-else>
@@ -256,26 +252,23 @@ const navigateToFeed = (feedId: number) => {
         </div>
         <div class="flex items-center gap-2">
           <ThemeSwitcher class="ml-auto" />
-          <Button variant="outline" size="sm" @click="logout">Logout</Button>
+          <UserAvatar />
         </div>
       </header>
       <div
         v-if="refreshFeed"
-        class="flex items-center justify-center h-full opacity-50"
-      >
+        class="flex items-center justify-center h-full opacity-50">
         <Loader2 class="w-4 h-4 animate-spin" />
       </div>
       <div
         v-else
         class="w-full mx-auto px-4 py-8"
-        :class="!selectedFeed && !selectedArticle ? 'max-w-7xl' : 'max-w-4xl'"
-      >
+        :class="!selectedFeed && !selectedArticle ? 'max-w-7xl' : 'max-w-4xl'">
         <!-- TODO FIX THIS TYPE CANT HAVE ANY! -->
         <FeedsGrid
           v-if="!selectedFeed && !selectedArticle"
           :feeds="rssFeeds?.data as any[]"
-          @select-feed="handleFeedSelect"
-        />
+          @select-feed="handleFeedSelect" />
 
         <div v-else-if="selectedFeed && !selectedArticle" class="space-y-6">
           <div class="mb-8">
@@ -294,22 +287,20 @@ const navigateToFeed = (feedId: number) => {
               v-for="item in selectedFeed.items"
               :key="item.link || item.guid"
               class="hover:shadow-lg transition-shadow cursor-pointer group"
-              @click="handleArticleSelect(item)"
-            >
+              @click="handleArticleSelect(item)">
               <CardHeader>
                 <CardTitle
-                  class="text-xl leading-tight group-hover:text-primary transition-colors line-clamp-2"
-                >
+                  class="text-xl leading-tight group-hover:text-primary transition-colors line-clamp-2">
                   {{ item.title }}
                 </CardTitle>
                 <CardDescription class="flex flex-wrap items-center gap-3 mt-2">
                   <span v-if="item.pubDate" class="flex items-center gap-1.5">
                     <Calendar class="w-3.5 h-3.5" />
                     {{
-                      new Date(item.pubDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
+                      new Date(item.pubDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
                       })
                     }}
                   </span>
@@ -322,8 +313,7 @@ const navigateToFeed = (feedId: number) => {
               <CardContent>
                 <p
                   v-if="item.contentSnippet"
-                  class="text-muted-foreground line-clamp-4 text-sm leading-relaxed"
-                >
+                  class="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
                   {{ item.contentSnippet }}
                 </p>
                 <p v-else class="text-muted-foreground italic text-sm">
@@ -335,8 +325,7 @@ const navigateToFeed = (feedId: number) => {
                   variant="default"
                   size="sm"
                   class="flex-1"
-                  @click="handleArticleSelect(item)"
-                >
+                  @click="handleArticleSelect(item)">
                   Read Article
                 </Button>
                 <Button
@@ -344,14 +333,12 @@ const navigateToFeed = (feedId: number) => {
                   variant="outline"
                   size="sm"
                   as-child
-                  @click.stop
-                >
+                  @click.stop>
                   <a
                     :href="item.link"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="flex items-center gap-1.5"
-                  >
+                    class="flex items-center gap-1.5">
                     <ExternalLink class="w-3.5 h-3.5" />
                     Original
                   </a>
@@ -363,12 +350,10 @@ const navigateToFeed = (feedId: number) => {
 
         <article
           v-else-if="selectedArticle"
-          class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-0 prose-h1:leading-tight prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:text-foreground prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-foreground prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-p:text-base prose-p:leading-7 prose-p:mb-6 prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-strong:font-semibold prose-strong:text-foreground prose-img:rounded-lg prose-img:shadow-md prose-img:my-8 prose-pre:bg-muted prose-pre:text-foreground prose-pre:rounded-lg prose-pre:shadow-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-ul:list-disc prose-ul:pl-6 prose-li:marker:text-primary prose-ol:list-decimal prose-ol:pl-6 prose-hr:border-border prose-hr:my-8 prose-table:overflow-hidden prose-th:bg-muted prose-th:font-semibold prose-td:border-border"
-        >
+          class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-0 prose-h1:leading-tight prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:text-foreground prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-foreground prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-p:text-base prose-p:leading-7 prose-p:mb-6 prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-strong:font-semibold prose-strong:text-foreground prose-img:rounded-lg prose-img:shadow-md prose-img:my-8 prose-pre:bg-muted prose-pre:text-foreground prose-pre:rounded-lg prose-pre:shadow-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-ul:list-disc prose-ul:pl-6 prose-li:marker:text-primary prose-ol:list-decimal prose-ol:pl-6 prose-hr:border-border prose-hr:my-8 prose-table:overflow-hidden prose-th:bg-muted prose-th:font-semibold prose-td:border-border">
           <h1>{{ selectedArticle.title }}</h1>
           <div
-            class="text-sm text-muted-foreground mb-1 flex items-center justify-between"
-          >
+            class="text-sm text-muted-foreground mb-1 flex items-center justify-between">
             <div>
               <time v-if="selectedArticle.pubDate">{{
                 new Date(selectedArticle.pubDate).toLocaleDateString()
@@ -385,8 +370,7 @@ const navigateToFeed = (feedId: number) => {
               :total-words="
                 selectedArticle['content:encodedSnippet']?.split(' ').length ||
                 0
-              "
-            />
+              " />
           </div>
           <div v-html="articleContent"></div>
         </article>
