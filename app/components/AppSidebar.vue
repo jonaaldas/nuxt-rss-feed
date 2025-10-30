@@ -3,28 +3,6 @@ import { toast } from 'vue-sonner';
 import { useFuse } from '@vueuse/integrations/useFuse';
 import type { SidebarProps } from '@/components/ui/sidebar';
 import { ChevronRight, Rss, Calendar, Loader2 } from 'lucide-vue-next';
-import SearchForm from '@/components/SearchForm.vue';
-import { useMutation, useQueryCache } from '@pinia/colada';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Badge } from '../components/ui/badge';
 import AddModal from '@/components/add-modal.vue';
 import type { NavItem } from '../../types/rss';
 
@@ -142,7 +120,7 @@ const searchResults = computed(() => {
         <SidebarGroupLabel class="text-xs">Actions</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenuButton asChild>
-            <NuxtLink to="/dashboard">
+            <NuxtLink to="/dashboard/feed">
               <Icon name="heroicons:rss-solid" />
               <span>My Feeds</span>
             </NuxtLink>
