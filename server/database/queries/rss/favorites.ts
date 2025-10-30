@@ -10,7 +10,7 @@ export const getAllFavorites = async (userId: string) => {
     const cacheKey = `favorites:${userId}`;
     const cachedFavorites = await getFavorite(cacheKey);
 
-    if (cachedFavorites) {
+    if (cachedFavorites && Array.isArray(cachedFavorites)) {
       return { data: cachedFavorites, error: null };
     }
 
@@ -19,7 +19,9 @@ export const getAllFavorites = async (userId: string) => {
       .from(favoriteArticle)
       .where(eq(favoriteArticle.userId, userId));
 
-    await setFavorite(cacheKey, res);
+    if (Array.isArray(res)) {
+      await setFavorite(cacheKey, res);
+    }
 
     return { data: res, error: null };
   } catch (err) {
@@ -33,7 +35,7 @@ export const getFavorites = async (userId: string, articleGuid: string) => {
     const cacheKey = `favorite:${userId}:${articleGuid}`;
     const cachedFavorite = await getFavorite(cacheKey);
 
-    if (cachedFavorite) {
+    if (cachedFavorite && Array.isArray(cachedFavorite)) {
       return { data: cachedFavorite, error: null };
     }
 
@@ -47,7 +49,7 @@ export const getFavorites = async (userId: string, articleGuid: string) => {
         ),
       );
 
-    if (res.length > 0) {
+    if (Array.isArray(res) && res.length > 0) {
       await setFavorite(cacheKey, res);
     }
 

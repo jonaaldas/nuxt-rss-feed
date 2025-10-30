@@ -10,31 +10,12 @@ definePageMeta({
   middleware: 'auth',
 });
 
-const articleContent = computed(() => {
-  if (!dashboardStore.selectedArticle) return null;
-
-  try {
-    const feedItem = dashboardStore.selectedArticle;
-    if (feedItem['content:encoded']) {
-      return feedItem['content:encoded'];
-    }
-    if (feedItem.content) {
-      return feedItem.content;
-    }
-    return feedItem.contentSnippet || null;
-  } catch (error) {
-    return null;
-  }
-});
-
 const handleArticleSelect = (item: any) => {
-  dashboardStore.selectArticle(item);
-  router.push({
-    query: {
-      feed: dashboardStore.selectedFeed?.id,
-      article: encodeURIComponent(item.link || item.guid || item.title),
-    },
-  });
+  const articleId = encodeURIComponent(item.link || item.guid || item.title);
+  const feedId = dashboardStore.selectedFeed?.id;
+  if (feedId) {
+    router.push(`/dashboard/feed/${feedId}/article/${articleId}`);
+  }
 };
 
 const handleFeedSelect = (feed: any) => {
@@ -50,19 +31,13 @@ const handleFeedSelect = (feed: any) => {
 <template>
   <div
     class="w-full mx-auto px-4 py-8"
-    :class="
-      !dashboardStore.selectedFeed && !dashboardStore.selectedArticle
-        ? 'max-w-7xl'
-        : 'max-w-4xl'
-    ">
+    :class="!dashboardStore.selectedFeed ? 'max-w-7xl' : 'max-w-4xl'">
     <FeedsGrid
-      v-if="!dashboardStore.selectedFeed && !dashboardStore.selectedArticle"
+      v-if="!dashboardStore.selectedFeed"
       :feeds="dashboardStore.rssFeeds?.data as any[]"
       @select-feed="handleFeedSelect" />
 
-    <div
-      v-else-if="dashboardStore.selectedFeed && !dashboardStore.selectedArticle"
-      class="space-y-6">
+    <div v-else-if="dashboardStore.selectedFeed" class="space-y-6">
       <div class="mb-8">
         <h1 class="text-4xl font-bold mb-2">
           {{ dashboardStore.selectedFeed.title }}
@@ -139,34 +114,5 @@ const handleFeedSelect = (feed: any) => {
         </Card>
       </div>
     </div>
-
-    <article
-      v-else-if="dashboardStore.selectedArticle"
-      class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-0 prose-h1:leading-tight prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:text-foreground prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-foreground prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-p:text-base prose-p:leading-7 prose-p:mb-6 prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-strong:font-semibold prose-strong:text-foreground prose-img:rounded-lg prose-img:shadow-md prose-img:my-8 prose-pre:bg-muted prose-pre:text-foreground prose-pre:rounded-lg prose-pre:shadow-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-ul:list-disc prose-ul:pl-6 prose-li:marker:text-primary prose-ol:list-decimal prose-ol:pl-6 prose-hr:border-border prose-hr:my-8 prose-table:overflow-hidden prose-th:bg-muted prose-th:font-semibold prose-td:border-border">
-      <h1>{{ dashboardStore.selectedArticle.title }}</h1>
-      <div
-        class="text-sm text-muted-foreground mb-1 flex items-center justify-between">
-        <div>
-          <time v-if="dashboardStore.selectedArticle.pubDate">{{
-            new Date(
-              dashboardStore.selectedArticle.pubDate,
-            ).toLocaleDateString()
-          }}</time>
-          <a
-            v-if="dashboardStore.selectedArticle.link"
-            :href="dashboardStore.selectedArticle.link"
-            target="_blank"
-            class="ml-4"
-            >Read original →</a
-          >
-        </div>
-        <ReadTime
-          :total-words="
-            dashboardStore.selectedArticle['content:encodedSnippet']?.split(' ')
-              .length || 0
-          " />
-      </div>
-      <div v-html="articleContent"></div>
-    </article>
   </div>
 </template>

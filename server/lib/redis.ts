@@ -38,5 +38,5 @@ export const setFavorite = async (
 
 export const del = async (key: string) => {
   const str = getKey(key);
-  await useStorage("cache").del(str);
+  await useStorage('cache').removeItem(str);
 };

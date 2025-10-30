@@ -36,7 +36,7 @@ const { session } = useAuthStore();
 const { mutate: refreshFeed, asyncStatus: refreshLoading } = useMutation({
   key: ['saveRssFeed', session?.user?.id as string],
   mutation: async () => {
-    const response = await $trpc.refresh.mutate();
+    const response = await $trpc.rss.refresh.mutate();
     if (response.error) {
       throw new Error(response.error as string);
     }

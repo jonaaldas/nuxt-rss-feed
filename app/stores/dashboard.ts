@@ -13,7 +13,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     key: () => ['rssFeeds', userId.value],
     query: async () => {
       try {
-        const data = await $trpc.rss.query();
+        const data = await $trpc.rss.rss.query();
         return data;
       } catch (error) {
         throw error;
@@ -69,7 +69,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (!feedParam || !rssFeeds.value || !('data' in rssFeeds.value)) return;
 
     const feed = rssFeeds.value.data.find(
-      (f: any) => f.id === parseInt(feedParam),
+      (f: any) => f.id === feedParam || f.id === parseInt(feedParam),
     );
     if (feed) {
       const transformedFeed = navMain.value.find(
