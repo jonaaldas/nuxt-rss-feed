@@ -1,15 +1,6 @@
 <script setup lang="ts">
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { authClient } from '@/lib/auth-client';
 import SettingsModal from '@/components/settings-modal.vue';
-import { Settings } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const { session } = storeToRefs(authStore);
@@ -18,7 +9,7 @@ const isPopoverOpen = ref(false);
 
 const getUserInitials = () => {
   if (!session) return '?';
-  const email = session.user?.email || '';
+  const email = session.value?.user?.email || '';
   return email.charAt(0).toUpperCase();
 };
 
