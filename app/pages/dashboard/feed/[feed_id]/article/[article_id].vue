@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Loader2 } from 'lucide-vue-next';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -86,7 +85,9 @@ const handleToggleFavorite = () => {
     <div
       v-if="!dashboardStore.selectedArticle"
       class="flex items-center justify-center h-64">
-      <Loader2 class="w-6 h-6 animate-spin text-muted-foreground" />
+      <Icon
+        name="lucide:loader-circle"
+        class="w-6 h-6 animate-spin text-muted-foreground" />
     </div>
 
     <article
