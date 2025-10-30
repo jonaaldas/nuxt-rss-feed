@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
+import DOMPurify from 'dompurify';
 
 const route = useRoute();
 const dashboardStore = useDashboardStore();
@@ -16,12 +17,17 @@ const articleContent = computed(() => {
   try {
     const feedItem = dashboardStore.selectedArticle;
     if (feedItem['content:encoded']) {
-      return feedItem['content:encoded'];
+      const sanitizedContent = DOMPurify.sanitize(
+        feedItem['content:encoded'] || '',
+      );
+      return sanitizedContent;
     }
     if (feedItem.content) {
-      return feedItem.content;
+      const sanitizedContent = DOMPurify.sanitize(feedItem.content || '');
+      return sanitizedContent;
     }
-    return feedItem.contentSnippet || null;
+    const sanitizedContent = DOMPurify.sanitize(feedItem.contentSnippet || '');
+    return sanitizedContent;
   } catch (error) {
     return null;
   }
@@ -47,8 +53,7 @@ watch(
         }
 
         // Then select article
-        const decodedId = decodeURIComponent(articleId);
-        dashboardStore.selectArticleFromQuery(decodedId);
+        dashboardStore.selectArticleFromQuery(articleId);
       }
     }
   },
@@ -78,6 +83,12 @@ const handleToggleFavorite = () => {
     isFavorite: isArticleFavorite.value,
   });
 };
+
+const articleWordCount = computed(() => {
+  if (!articleContent.value) return 0;
+  const text = articleContent.value.replace(/<[^>]*>/g, ' ');
+  return text.split(/\s+/).filter((word: string) => word.length > 0).length;
+});
 </script>
 
 <template>
@@ -126,11 +137,7 @@ const handleToggleFavorite = () => {
             >Read original →</a
           >
         </div>
-        <ReadTime
-          :total-words="
-            dashboardStore.selectedArticle['content:encodedSnippet']?.split(' ')
-              .length || 0
-          " />
+        <ReadTime :total-words="articleWordCount" />
       </div>
       <div v-html="articleContent"></div>
     </article>

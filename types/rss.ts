@@ -1,3 +1,4 @@
+import { z } from 'zod';
 export type NavItem = {
   title: string;
   url: string;
@@ -5,6 +6,25 @@ export type NavItem = {
   isActive?: boolean;
   id: string;
 };
+
+export const RssFeedItemSchema = z.object({
+  content: z.string(),
+  contentEncoded: z.string(),
+  contentEncodedSnippet: z.string(),
+  contentSnipper: z.string(),
+  creator: z.string(),
+  dcCreator: z.string(),
+  enclosure: z.object({
+    length: z.number(),
+    type: z.string(),
+    url: z.string(),
+  }),
+  guid: z.string(),
+  isoDate: z.string(),
+  link: z.string(),
+  pubDate: z.string(),
+  title: z.string(),
+});
 
 export type RssFeedItem = {
   content: string;
@@ -19,4 +39,4 @@ export type RssFeedItem = {
   link: string;
   pubDate: string;
   title: string;
-}[];
+};

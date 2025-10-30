@@ -2,8 +2,8 @@ import { useQuery } from '@pinia/colada';
 
 export const useDashboardStore = defineStore('dashboard', () => {
   const { $trpc } = useNuxtApp();
-  const { session } = useAuthStore();
-  const userId = computed(() => session?.user?.id ?? '');
+  const authStore = useAuthStore();
+  const userId = computed(() => authStore.session?.user?.id ?? '');
 
   const selectedFeed = ref<any>(null);
   const selectedArticle = ref<any>(null);
@@ -125,4 +125,3 @@ export const useDashboardStore = defineStore('dashboard', () => {
     selectArticleFromQuery,
   };
 });
-

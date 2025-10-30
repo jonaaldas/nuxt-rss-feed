@@ -4,8 +4,7 @@ definePageMeta({
   middleware: 'auth',
 });
 
-// Redirect to feed page
-await navigateTo('/dashboard/feed');
+navigateTo('/dashboard/feed', { replace: true });
 </script>
 
 <template>

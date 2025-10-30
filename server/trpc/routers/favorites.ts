@@ -4,10 +4,9 @@ import {
   getAllFavorites,
   getFavorites,
   saveFavorite,
-  saveFavoriteArticleSnapshot,
   deleteFavorite,
 } from '../../database/queries/rss/favorites';
-import { RssFeedItem } from '~~/types/rss';
+import { RssFeedItem, RssFeedItemSchema } from '~~/types/rss';
 
 export const favoriteRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -26,7 +25,7 @@ export const favoriteRouter = createTRPCRouter({
     .input(
       z.object({
         articleGuid: z.string(),
-        articleSnapshot: z.any() as z.ZodType<RssFeedItem>,
+        articleSnapshot: RssFeedItemSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -47,7 +46,7 @@ export const favoriteRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const result = await saveFavoriteArticleSnapshot(
+      const result = await saveFavorite(
         ctx.user.id,
         input.articleGuid,
         input.articleSnapshot,

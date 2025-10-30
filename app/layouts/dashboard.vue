@@ -139,8 +139,7 @@ watch(
           }
           // Then select article
           if (dashboardStore.rssFeeds && 'data' in dashboardStore.rssFeeds) {
-            const decodedId = decodeURIComponent(articleId);
-            dashboardStore.selectArticleFromQuery(decodedId);
+            dashboardStore.selectArticleFromQuery(articleId);
           }
         }
       } else if (oldPath.includes('/article/') && isFeedListPage.value) {

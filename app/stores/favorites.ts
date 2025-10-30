@@ -2,16 +2,14 @@ import { useQuery, useMutation, useQueryCache } from '@pinia/colada';
 
 export const useFavoritesStore = defineStore('favorites', () => {
   const { $trpc } = useNuxtApp();
-  const { session } = useAuthStore();
-  const userId = computed(
-    () => session?.user?.id ?? (undefined as unknown as string),
-  );
+  const authStore = useAuthStore();
+  const userId = computed(() => authStore.session?.user?.id ?? undefined);
   const queryCache = useQueryCache();
 
   const selectedArticle = ref<any>(null);
 
   const { asyncStatus, data: favorites } = useQuery({
-    key: () => ['favorites', userId.value],
+    key: () => ['favorites', userId.value ?? ''],
     query: async () => {
       try {
         const data = await $trpc.favorites.getAll.query();
@@ -59,7 +57,7 @@ export const useFavoritesStore = defineStore('favorites', () => {
 
   const { mutate: toggleFavorite, asyncStatus: toggleFavoriteStatus } =
     useMutation({
-      key: ['toggleFavorite', userId.value],
+      key: ['toggleFavorite', userId.value ?? ''],
       mutation: async ({
         articleGuid,
         articleSnapshot,
@@ -80,14 +78,14 @@ export const useFavoritesStore = defineStore('favorites', () => {
       },
       onSuccess: () => {
         queryCache.invalidateQueries({
-          key: ['favorites', userId.value],
+          key: ['favorites', userId.value ?? ''],
         });
       },
     });
 
   const { mutate: updateFavorite, asyncStatus: updateFavoriteStatus } =
     useMutation({
-      key: ['updateFavorite', userId.value],
+      key: ['updateFavorite', userId.value ?? ''],
       mutation: async ({
         articleGuid,
         articleSnapshot,
@@ -102,7 +100,7 @@ export const useFavoritesStore = defineStore('favorites', () => {
       },
       onSuccess: () => {
         queryCache.invalidateQueries({
-          key: ['favorites', userId.value],
+          key: ['favorites', userId.value ?? ''],
         });
       },
     });
@@ -128,4 +126,3 @@ export const useFavoritesStore = defineStore('favorites', () => {
     isFavorite,
   };
 });
-

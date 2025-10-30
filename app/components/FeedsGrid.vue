@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { BookOpen, Clock } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
 const { session } = useAuthStore();
@@ -122,9 +121,7 @@ const { mutate: deleteUrl, asyncStatus: refrefLoadingDeleteUrl } = useMutation({
                   class="w-4 h-4 animate-spin" />
               </PopoverTrigger>
               <PopoverContent class="inline-block w-fit">
-                <Button
-                  @click="deleteUrl(feed.id.toString())"
-                  variant="destructive">
+                <Button @click="deleteUrl(feed.id)" variant="destructive">
                   <Icon name="heroicons:trash-20-solid" class="size-2" />
                 </Button>
               </PopoverContent>

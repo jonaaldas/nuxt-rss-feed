@@ -5,6 +5,25 @@ import { RssFeedItem } from '~~/types/rss';
 import { getFavorite, setFavorite, del } from '../../../lib/redis';
 import type { H3Event } from 'h3';
 
+const invalidateFavoriteCache = async (
+  userId: string,
+  rssFeedItemsGuid: string,
+  event?: H3Event,
+) => {
+  const keys = [
+    `favorites:${userId}`,
+    `favorite:${userId}:${rssFeedItemsGuid}`,
+  ];
+
+  if (event) {
+    keys.forEach((key) => {
+      event.waitUntil(del(key));
+    });
+  } else {
+    await Promise.all(keys.map((key) => del(key)));
+  }
+};
+
 export const getAllFavorites = async (userId: string) => {
   try {
     const cacheKey = `favorites:${userId}`;
@@ -72,56 +91,19 @@ export const saveFavorite = async (
     articleSnapshot: articleSnapshot as unknown as RssFeedItem,
   });
   try {
-    const newFavorite = await db
+    const savedFavorite = await db
       .insert(favoriteArticle)
-      .values(validatedArticleSnapshot);
-    
-    if (event) {
-      event.waitUntil(del(`favorites:${userId}`));
-      event.waitUntil(del(`favorite:${userId}:${rssFeedItemsGuid}`));
-    } else {
-      await del(`favorites:${userId}`);
-      await del(`favorite:${userId}:${rssFeedItemsGuid}`);
-    }
-    
-    return { data: newFavorite, error: null };
-  } catch (error) {
-    console.error(error);
-    return { data: null, error: error };
-  }
-};
+      .values(validatedArticleSnapshot)
+      .onConflictDoUpdate({
+        target: [favoriteArticle.userId, favoriteArticle.rssFeedItemsGuid],
+        set: {
+          articleSnapshot: validatedArticleSnapshot.articleSnapshot,
+        },
+      });
 
-export const saveFavoriteArticleSnapshot = async (
-  userId: string,
-  rssFeedItemsGuid: string,
-  articleSnapshot: RssFeedItem,
-  event?: H3Event,
-) => {
-  const validatedArticleSnapshot = favoriteArticleInsertSchema.parse({
-    userId,
-    rssFeedItemsGuid,
-    articleSnapshot: articleSnapshot as unknown as RssFeedItem,
-  });
-  try {
-    const updatedFavoriteArticle = await db
-      .update(favoriteArticle)
-      .set(validatedArticleSnapshot)
-      .where(
-        and(
-          eq(favoriteArticle.userId, userId),
-          eq(favoriteArticle.rssFeedItemsGuid, rssFeedItemsGuid),
-        ),
-      );
-    
-    if (event) {
-      event.waitUntil(del(`favorites:${userId}`));
-      event.waitUntil(del(`favorite:${userId}:${rssFeedItemsGuid}`));
-    } else {
-      await del(`favorites:${userId}`);
-      await del(`favorite:${userId}:${rssFeedItemsGuid}`);
-    }
-    
-    return { data: updatedFavoriteArticle, error: null };
+    await invalidateFavoriteCache(userId, rssFeedItemsGuid, event);
+
+    return { data: savedFavorite, error: null };
   } catch (error) {
     console.error(error);
     return { data: null, error: error };
@@ -142,15 +124,9 @@ export const deleteFavorite = async (
           eq(favoriteArticle.rssFeedItemsGuid, rssFeedItemsGuid),
         ),
       );
-    
-    if (event) {
-      event.waitUntil(del(`favorites:${userId}`));
-      event.waitUntil(del(`favorite:${userId}:${rssFeedItemsGuid}`));
-    } else {
-      await del(`favorites:${userId}`);
-      await del(`favorite:${userId}:${rssFeedItemsGuid}`);
-    }
-    
+
+    await invalidateFavoriteCache(userId, rssFeedItemsGuid, event);
+
     return { data: deletedFavorite, error: null };
   } catch (error) {
     console.error(error);

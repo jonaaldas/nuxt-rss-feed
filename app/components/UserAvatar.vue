@@ -11,7 +11,8 @@ import { authClient } from '@/lib/auth-client';
 import SettingsModal from '@/components/settings-modal.vue';
 import { Settings } from 'lucide-vue-next';
 
-const { session } = useAuthStore();
+const authStore = useAuthStore();
+const { session } = storeToRefs(authStore);
 const router = useRouter();
 const isPopoverOpen = ref(false);
 

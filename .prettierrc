@@ -6,7 +6,5 @@
   "tabWidth": 2,
   "useTabs": false,
   "semi": true,
-  "rangeStart": 0,
-  "rangeEnd": 1000,
   "vueIndentScriptAndStyle": false
 }
