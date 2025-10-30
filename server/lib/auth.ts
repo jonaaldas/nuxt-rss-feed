@@ -1,7 +1,7 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../database";
-import * as authSchema from "../database/schema";
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { db } from '../database';
+import * as authSchema from '../database/schema';
 
 const betterAuthSecret = process.env.NUXT_BETTER_AUTH_SECRET!;
 const googleClientId = process.env.NUXT_GOOGLE_CLIENT_ID!;
@@ -10,7 +10,7 @@ const betterAuthUrl = process.env.NUXT_BETTER_AUTH_URL!;
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "pg",
+    provider: 'pg',
     schema: {
       user: authSchema.user,
       account: authSchema.account,
@@ -30,4 +30,10 @@ export const auth = betterAuth({
   baseURL: betterAuthUrl,
   secret: betterAuthSecret,
   trustedOrigins: [betterAuthUrl],
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 72 * 60 * 60, // 72 hours
+    },
+  },
 });
