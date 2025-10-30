@@ -1,5 +1,10 @@
 import { db } from "../../index";
-import { RssColumns, rssFeed, rssFeedInsertSchema } from "../../schema";
+import {
+  RssColumns,
+  rssFeed,
+  rssFeedInsertSchema,
+  rssFeedUpdateSchema,
+} from "../../schema";
 import { and, eq } from "drizzle-orm";
 import { del, get, set } from "../../../lib/redis";
 import type { H3Event } from "h3";
@@ -45,19 +50,21 @@ export const saveRssFeed = async (
   }
 };
 
-export const updateAllFeeds = async (feeds: RssColumns[], userId: string) => {
+export const updateAllFeeds = async (
+  feeds: Array<Omit<RssColumns, "createdAt" | "updatedAt">>,
+  userId: string,
+) => {
   try {
-    let promises: any = [];
-    feeds.forEach(async (feed) => {
-      promises.push(
-        db
-          .update(rssFeed)
-          .set(feed)
-          .where(and(eq(rssFeed.url, feed.url), eq(rssFeed.userId, userId))),
-      );
+    const updatePromises = feeds.map(async (feed) => {
+      const validatedFeed = rssFeedUpdateSchema.parse(feed);
+      return db
+        .update(rssFeed)
+        .set(validatedFeed)
+        .where(and(eq(rssFeed.userId, userId), eq(rssFeed.url, feed.url)));
     });
-    await Promise.all(promises);
-    return true;
+    const updatedFeeds = await Promise.all(updatePromises);
+    await del(`feed:${userId}`);
+    return updatedFeeds;
   } catch (error) {
     console.error(error);
     return { data: null, error: error };

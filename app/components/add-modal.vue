@@ -7,23 +7,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-vue-next";
-import { useMutation, useQueryCache } from "@pinia/colada";
-import { ref } from "vue";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-vue-next';
+import { useMutation, useQueryCache } from '@pinia/colada';
+import { ref } from 'vue';
 const { session } = useAuthStore();
-import { Input } from "@/components/ui/input";
-import { toast } from "vue-sonner";
+import { Input } from '@/components/ui/input';
+import { toast } from 'vue-sonner';
 const { $trpc } = useNuxtApp();
-const url = ref<string>("");
+const url = ref<string>('');
 const isOpen = ref<boolean>(false);
 const queryCache = useQueryCache();
 
 const { mutate: saveRssFeed, asyncStatus: saveRssFeedLoading } = useMutation({
-  key: ["rssFeeds", session?.user?.id as string],
+  key: ['rssFeeds', session?.user?.id as string],
   mutation: async ({ url }: { url: string }) => {
-    const response = await $trpc.saveRssFeed.mutate({ url });
+    const response = await $trpc.rss.saveRssFeed.mutate({ url });
     if (response.error) {
       throw new Error(response.error as string);
     }
@@ -31,7 +31,7 @@ const { mutate: saveRssFeed, asyncStatus: saveRssFeedLoading } = useMutation({
   },
 
   onSuccess: (data) => {
-    url.value = ""; // Clear the input after success
+    url.value = ''; // Clear the input after success
     isOpen.value = false; // Close the dialog
   },
   onError: (error) => {
@@ -39,7 +39,7 @@ const { mutate: saveRssFeed, asyncStatus: saveRssFeedLoading } = useMutation({
   },
   onSettled: () => {
     queryCache.invalidateQueries({
-      key: ["rssFeeds", session?.user?.id as string],
+      key: ['rssFeeds', session?.user?.id as string],
     });
   },
 });
@@ -52,13 +52,11 @@ const { mutate: saveRssFeed, asyncStatus: saveRssFeedLoading } = useMutation({
         <Icon
           v-if="saveRssFeedLoading == 'idle'"
           name="heroicons:plus"
-          class="w-4 h-4"
-        />
+          class="w-4 h-4" />
         <Icon
           v-else
           name="svg-spinners:180-ring"
-          class="w-4 h-4 animate-spin"
-        />
+          class="w-4 h-4 animate-spin" />
         Add a new feed
       </Button>
     </DialogTrigger>
@@ -74,18 +72,15 @@ const { mutate: saveRssFeed, asyncStatus: saveRssFeedLoading } = useMutation({
         <Button
           variant="secondary"
           @click="() => saveRssFeed({ url })"
-          :disabled="!url || saveRssFeedLoading !== 'idle'"
-        >
+          :disabled="!url || saveRssFeedLoading !== 'idle'">
           <Icon
             v-if="saveRssFeedLoading == 'idle'"
             name="heroicons:plus"
-            class="w-4 h-4"
-          />
+            class="w-4 h-4" />
           <Icon
             v-else
             name="svg-spinners:180-ring"
-            class="w-4 h-4 animate-spin"
-          />
+            class="w-4 h-4 animate-spin" />
           Add feed
         </Button>
       </DialogFooter>

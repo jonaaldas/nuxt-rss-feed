@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { BookOpen, Clock } from "lucide-vue-next";
-import { toast } from "vue-sonner";
+import { toast } from 'vue-sonner';
 
 const { session } = useAuthStore();
 const { $trpc } = useNuxtApp();
@@ -13,7 +12,7 @@ interface FeedItem {
 }
 
 interface Feed {
-  id: number;
+  id: string;
   title: string;
   url: string;
   feedItems?: FeedItem[];
@@ -33,7 +32,7 @@ const emit = defineEmits<{
 }>();
 
 const handleFeedClick = (feed: Feed) => {
-  emit("selectFeed", feed);
+  emit('selectFeed', feed);
 };
 
 const getLatestArticleDate = (feed: Feed) => {
@@ -49,23 +48,23 @@ const getLatestArticleDate = (feed: Feed) => {
 };
 
 const { mutate: deleteUrl, asyncStatus: refrefLoadingDeleteUrl } = useMutation({
-  key: ["saveRssFeed", session?.user?.id as string],
+  key: ['saveRssFeed', session?.user?.id as string],
   mutation: async (id: string) => {
-    const response = await $trpc.delete.mutate({ id });
+    const response = await $trpc.rss.delete.mutate({ id });
     return response;
   },
   onSuccess: () => {
     queryCache.invalidateQueries({
-      key: ["saveRssFeed", session?.user?.id as string],
+      key: ['saveRssFeed', session?.user?.id as string],
     });
     queryCache.invalidateQueries({
-      key: ["rssFeeds", session?.user?.id as string],
+      key: ['rssFeeds', session?.user?.id as string],
     });
-    toast("Feed deleted successfully");
+    toast('Feed deleted successfully');
   },
   onError: (error) => {
-    toast.error("Failed to delete feed", {
-      description: "There was an error deleting the feed",
+    toast.error('Failed to delete feed', {
+      description: 'There was an error deleting the feed',
     });
   },
 });
@@ -73,9 +72,8 @@ const { mutate: deleteUrl, asyncStatus: refrefLoadingDeleteUrl } = useMutation({
 
 <template>
   <Empty
-    v-if="feeds.length === 0"
-    class="h-full flex flex-col gap-6 justify-center items-center"
-  >
+    v-if="feeds && feeds.length === 0"
+    class="h-full flex flex-col gap-6 justify-center items-center">
     <EmptyHeader class="flex flex-col items-center justify-center">
       <EmptyMedia variant="icon">
         <Icon name="heroicons:rss-20-solid" size="10rem" />
@@ -88,9 +86,8 @@ const { mutate: deleteUrl, asyncStatus: refrefLoadingDeleteUrl } = useMutation({
     </EmptyHeader>
     <EmptyContent class="flex justify-center items-center w-full">
       <div
-        class="flex justify-center items-center w-full min-w-[120px] max-w-[160px]"
-      >
-        <AddModal class="w-auto min-w-[120px] max-w-[160px]" />
+        class="flex justify-center items-center w-full min-w-[120px] max-w-40">
+        <AddModal class="w-auto min-w-[120px] max-w-40" />
       </div>
     </EmptyContent>
   </Empty>
@@ -107,31 +104,24 @@ const { mutate: deleteUrl, asyncStatus: refrefLoadingDeleteUrl } = useMutation({
       <Card
         v-for="feed in feeds"
         :key="feed.id"
-        class="hover:shadow-lg transition-all cursor-pointer group hover:border-primary/50"
-      >
+        class="hover:shadow-lg transition-all cursor-pointer group hover:border-primary/50">
         <CardHeader>
           <CardTitle
-            class="text-xl leading-tight group-hover:text-primary transition-colors line-clamp-2 w-full flex items-center justify-between"
-          >
+            class="text-xl leading-tight group-hover:text-primary transition-colors line-clamp-2 w-full flex items-center justify-between">
             <span>{{ feed.title }}</span>
             <Popover class="inline-block ml-auto">
               <PopoverTrigger class="inline-block">
                 <Icon
                   v-if="refrefLoadingDeleteUrl == 'idle'"
                   name="heroicons:ellipsis-vertical-20-solid"
-                  class="w-4 h-4"
-                />
+                  class="w-4 h-4" />
                 <Icon
                   v-else
                   name="svg-spinners:180-ring"
-                  class="w-4 h-4 animate-spin"
-                />
+                  class="w-4 h-4 animate-spin" />
               </PopoverTrigger>
               <PopoverContent class="inline-block w-fit">
-                <Button
-                  @click="deleteUrl(feed.id.toString())"
-                  variant="destructive"
-                >
+                <Button @click="deleteUrl(feed.id)" variant="destructive">
                   <Icon name="heroicons:trash-20-solid" class="size-2" />
                 </Button>
               </PopoverContent>
@@ -144,18 +134,17 @@ const { mutate: deleteUrl, asyncStatus: refrefLoadingDeleteUrl } = useMutation({
             </span>
             <span
               v-if="getLatestArticleDate(feed)"
-              class="flex items-center gap-1.5 text-xs"
-            >
+              class="flex items-center gap-1.5 text-xs">
               <Clock class="w-3.5 h-3.5" />
               Last update:
               {{
                 new Date(getLatestArticleDate(feed)!).toLocaleDateString(
-                  "en-US",
+                  'en-US',
                   {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  }
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  },
                 )
               }}
             </span>
@@ -171,8 +160,7 @@ const { mutate: deleteUrl, asyncStatus: refrefLoadingDeleteUrl } = useMutation({
             @click="handleFeedClick(feed)"
             variant="secondary"
             size="sm"
-            class="w-full"
-          >
+            class="w-full">
             View Feed
           </Button>
         </CardFooter>
