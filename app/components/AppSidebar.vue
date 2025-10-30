@@ -138,6 +138,23 @@ const searchResults = computed(() => {
       <SearchForm @input="handleSearchInput" />
     </SidebarHeader>
     <SidebarContent class="gap-3 p-3">
+      <SidebarGroup>
+        <SidebarGroupLabel class="text-xs">Actions</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenuButton asChild>
+            <NuxtLink to="/dashboard">
+              <Icon name="heroicons:rss-solid" />
+              <span>My Feeds</span>
+            </NuxtLink>
+          </SidebarMenuButton>
+          <SidebarMenuButton asChild>
+            <NuxtLink to="/dashboard/favorites">
+              <Icon name="heroicons:heart-solid" />
+              <span>Favorites</span>
+            </NuxtLink>
+          </SidebarMenuButton>
+        </SidebarGroupContent>
+      </SidebarGroup>
       <div
         v-if="refreshLoading === 'loading'"
         class="flex items-center justify-center h-full opacity-50">
