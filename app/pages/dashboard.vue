@@ -1,40 +1,20 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { ExternalLink, Calendar, User, Loader2 } from 'lucide-vue-next';
-import { useQuery } from '@pinia/colada';
-import { authClient } from '~/lib/auth-client';
+import { ExternalLink, Calendar, User } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
 
-const { $trpc } = useNuxtApp();
-const route = useRoute();
 const router = useRouter();
-const selectedArticle = ref<any>(null);
-const selectedFeed = ref<any>(null);
-const refreshFeed = ref(false);
-const { session } = useAuthStore();
-const userId = computed(() => session?.user?.id ?? '');
+const dashboardStore = useDashboardStore();
 
 definePageMeta({
+  layout: 'dashboard',
   middleware: 'auth',
 });
 
-const { asyncStatus, data: rssFeeds } = useQuery({
-  key: () => ['rssFeeds', userId.value],
-  query: async () => {
-    try {
-      const data = await $trpc.rss.query();
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  enabled: () => userId.value !== undefined,
-});
-
 const articleContent = computed(() => {
-  if (!selectedArticle.value) return null;
+  if (!dashboardStore.selectedArticle) return null;
 
   try {
-    const feedItem = selectedArticle.value;
+    const feedItem = dashboardStore.selectedArticle;
     if (feedItem['content:encoded']) {
       return feedItem['content:encoded'];
     }
@@ -47,334 +27,146 @@ const articleContent = computed(() => {
   }
 });
 
-const navMain = computed(() => {
-  if (!rssFeeds.value || !('data' in rssFeeds.value)) return [];
-  const data = rssFeeds.value.data;
-  return data?.map((feed) => {
-    const feedItems = Array.isArray(feed.feedItems) ? feed.feedItems : [];
-    return {
-      title: feed.title,
-      url: '/rss/',
-      id: feed.id,
-      items: feedItems.map((item: any) => ({
-        title: item.title,
-        url: '/rss/',
-        isActive: selectedArticle.value?.link === item.link,
-        ...item,
-      })),
-    };
-  });
-});
-
 const handleArticleSelect = (item: any) => {
-  selectedArticle.value = item;
+  dashboardStore.selectArticle(item);
   router.push({
     query: {
-      feed: selectedFeed.value?.id,
+      feed: dashboardStore.selectedFeed?.id,
       article: encodeURIComponent(item.link || item.guid || item.title),
     },
   });
 };
 
 const handleFeedSelect = (feed: any) => {
-  const transformedFeed = navMain.value.find((f: any) => f.id === feed.id) || {
-    ...feed,
-    items: Array.isArray(feed.feedItems) ? feed.feedItems : [],
-  };
-  selectedFeed.value = transformedFeed;
-  selectedArticle.value = null;
+  dashboardStore.selectFeed(feed);
   router.push({
     query: {
       feed: feed.id,
     },
   });
 };
-
-const handleFeedRefresh = (value: boolean) => {
-  refreshFeed.value = value;
-};
-
-const selectFeedFromQuery = () => {
-  const feedParam = route.query.feed as string;
-  if (!feedParam || !rssFeeds.value || !('data' in rssFeeds.value)) return;
-
-  const feed = rssFeeds.value.data.find(
-    (f: any) => f.id === parseInt(feedParam),
-  );
-  if (feed) {
-    const transformedFeed = navMain.value.find(
-      (f: any) => f.id === feed.id,
-    ) || {
-      ...feed,
-      items: Array.isArray(feed.feedItems) ? feed.feedItems : [],
-    };
-    selectedFeed.value = transformedFeed;
-  }
-};
-
-const selectArticleFromQuery = () => {
-  const articleParam = route.query.article as string;
-  if (!articleParam || !rssFeeds.value || !('data' in rssFeeds.value)) return;
-
-  const decodedParam = decodeURIComponent(articleParam);
-
-  for (const feed of rssFeeds.value.data) {
-    const feedItems = Array.isArray(feed.feedItems) ? feed.feedItems : [];
-    const article = feedItems.find(
-      (item: any) =>
-        item.link === decodedParam ||
-        item.guid === decodedParam ||
-        item.title === decodedParam,
-    );
-
-    if (article) {
-      selectedArticle.value = article;
-      const transformedFeed = navMain.value.find(
-        (f: any) => f.id === feed.id,
-      ) || {
-        ...feed,
-        items: feedItems,
-      };
-      selectedFeed.value = transformedFeed;
-      break;
-    }
-  }
-};
-
-watch(
-  () => rssFeeds.value,
-  (newValue) => {
-    if (newValue && 'data' in newValue) {
-      if (route.query.feed) {
-        selectFeedFromQuery();
-      }
-      if (route.query.article) {
-        selectArticleFromQuery();
-      }
-    }
-  },
-  { immediate: true },
-);
-
-watch(
-  () => route.query,
-  (newQuery) => {
-    if (rssFeeds.value && 'data' in rssFeeds.value) {
-      if (newQuery.feed) {
-        selectFeedFromQuery();
-      } else {
-        selectedFeed.value = null;
-      }
-
-      if (newQuery.article) {
-        selectArticleFromQuery();
-      } else {
-        selectedArticle.value = null;
-      }
-    }
-  },
-);
-
-const logout = async () => {
-  const { error } = await authClient.signOut();
-  if (error) {
-    console.error(error);
-  }
-  await navigateTo('/login');
-};
-
-const navigateToHome = () => {
-  selectedFeed.value = null;
-  selectedArticle.value = null;
-  navigateTo('/dashboard');
-};
-
-const navigateToFeed = (feedId: number) => {
-  selectedArticle.value = null;
-  navigateTo({
-    path: '/dashboard',
-    query: {
-      feed: feedId,
-    },
-  });
-};
 </script>
 
 <template>
-  <SidebarProvider>
-    <AppSidebar
-      :loading="asyncStatus === 'loading'"
-      :navMain="navMain"
-      @select-article="handleArticleSelect"
-      @refresh-feed="handleFeedRefresh"
+  <div
+    class="w-full mx-auto px-4 py-8"
+    :class="
+      !dashboardStore.selectedFeed && !dashboardStore.selectedArticle
+        ? 'max-w-7xl'
+        : 'max-w-4xl'
+    ">
+    <FeedsGrid
+      v-if="!dashboardStore.selectedFeed && !dashboardStore.selectedArticle"
+      :feeds="dashboardStore.rssFeeds?.data as any[]"
       @select-feed="handleFeedSelect" />
-    <SidebarInset>
-      <header
-        class="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4 justify-between">
+
+    <div
+      v-else-if="dashboardStore.selectedFeed && !dashboardStore.selectedArticle"
+      class="space-y-6">
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2">
+          {{ dashboardStore.selectedFeed.title }}
+        </h1>
         <div class="flex items-center gap-2">
-          <SidebarTrigger class="-ml-1" />
-          <Separator orientation="vertical" class="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem class="hidden md:block">
-                <BreadcrumbLink
-                  as="button"
-                  @click="navigateToHome"
-                  class="cursor-pointer">
-                  RSS Feeds
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <template v-if="selectedFeed">
-                <BreadcrumbSeparator class="hidden md:block" />
-                <BreadcrumbItem class="hidden md:block">
-                  <BreadcrumbLink
-                    v-if="selectedArticle"
-                    as="button"
-                    @click="navigateToFeed(selectedFeed.id)"
-                    class="cursor-pointer">
-                    {{ selectedFeed.title }}
-                  </BreadcrumbLink>
-                  <BreadcrumbPage v-else>
-                    {{ selectedFeed.title }}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </template>
-              <template v-if="selectedArticle">
-                <BreadcrumbSeparator class="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage class="line-clamp-1">
-                    {{ selectedArticle.title }}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </template>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <Badge variant="secondary">
+            {{ dashboardStore.selectedFeed.items?.length || 0 }} articles
+          </Badge>
         </div>
-        <div class="flex items-center gap-2">
-          <ThemeSwitcher class="ml-auto" />
-          <UserAvatar />
-        </div>
-      </header>
-      <div
-        v-if="refreshFeed"
-        class="flex items-center justify-center h-full opacity-50">
-        <Loader2 class="w-4 h-4 animate-spin" />
       </div>
-      <div
-        v-else
-        class="w-full mx-auto px-4 py-8"
-        :class="!selectedFeed && !selectedArticle ? 'max-w-7xl' : 'max-w-4xl'">
-        <!-- TODO FIX THIS TYPE CANT HAVE ANY! -->
-        <FeedsGrid
-          v-if="!selectedFeed && !selectedArticle"
-          :feeds="rssFeeds?.data as any[]"
-          @select-feed="handleFeedSelect" />
 
-        <div v-else-if="selectedFeed && !selectedArticle" class="space-y-6">
-          <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2">
-              {{ selectedFeed.title }}
-            </h1>
-            <div class="flex items-center gap-2">
-              <Badge variant="secondary">
-                {{ selectedFeed.items?.length || 0 }} articles
-              </Badge>
-            </div>
-          </div>
-
-          <div class="grid gap-6 md:grid-cols-2">
-            <Card
-              v-for="item in selectedFeed.items"
-              :key="item.link || item.guid"
-              class="hover:shadow-lg transition-shadow cursor-pointer group"
+      <div class="grid gap-6 md:grid-cols-2">
+        <Card
+          v-for="item in dashboardStore.selectedFeed.items"
+          :key="item.link || item.guid"
+          class="hover:shadow-lg transition-shadow cursor-pointer group"
+          @click="handleArticleSelect(item)">
+          <CardHeader>
+            <CardTitle
+              class="text-xl leading-tight group-hover:text-primary transition-colors line-clamp-2">
+              {{ item.title }}
+            </CardTitle>
+            <CardDescription class="flex flex-wrap items-center gap-3 mt-2">
+              <span v-if="item.pubDate" class="flex items-center gap-1.5">
+                <Calendar class="w-3.5 h-3.5" />
+                {{
+                  new Date(item.pubDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                }}
+              </span>
+              <span v-if="item.creator" class="flex items-center gap-1.5">
+                <User class="w-3.5 h-3.5" />
+                {{ item.creator }}
+              </span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p
+              v-if="item.contentSnippet"
+              class="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
+              {{ item.contentSnippet }}
+            </p>
+            <p v-else class="text-muted-foreground italic text-sm">
+              No preview available
+            </p>
+          </CardContent>
+          <CardFooter class="flex gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              class="flex-1"
               @click="handleArticleSelect(item)">
-              <CardHeader>
-                <CardTitle
-                  class="text-xl leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                  {{ item.title }}
-                </CardTitle>
-                <CardDescription class="flex flex-wrap items-center gap-3 mt-2">
-                  <span v-if="item.pubDate" class="flex items-center gap-1.5">
-                    <Calendar class="w-3.5 h-3.5" />
-                    {{
-                      new Date(item.pubDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    }}
-                  </span>
-                  <span v-if="item.creator" class="flex items-center gap-1.5">
-                    <User class="w-3.5 h-3.5" />
-                    {{ item.creator }}
-                  </span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p
-                  v-if="item.contentSnippet"
-                  class="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
-                  {{ item.contentSnippet }}
-                </p>
-                <p v-else class="text-muted-foreground italic text-sm">
-                  No preview available
-                </p>
-              </CardContent>
-              <CardFooter class="flex gap-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  class="flex-1"
-                  @click="handleArticleSelect(item)">
-                  Read Article
-                </Button>
-                <Button
-                  v-if="item.link"
-                  variant="outline"
-                  size="sm"
-                  as-child
-                  @click.stop>
-                  <a
-                    :href="item.link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex items-center gap-1.5">
-                    <ExternalLink class="w-3.5 h-3.5" />
-                    Original
-                  </a>
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-
-        <article
-          v-else-if="selectedArticle"
-          class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-0 prose-h1:leading-tight prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:text-foreground prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-foreground prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-p:text-base prose-p:leading-7 prose-p:mb-6 prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-strong:font-semibold prose-strong:text-foreground prose-img:rounded-lg prose-img:shadow-md prose-img:my-8 prose-pre:bg-muted prose-pre:text-foreground prose-pre:rounded-lg prose-pre:shadow-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-ul:list-disc prose-ul:pl-6 prose-li:marker:text-primary prose-ol:list-decimal prose-ol:pl-6 prose-hr:border-border prose-hr:my-8 prose-table:overflow-hidden prose-th:bg-muted prose-th:font-semibold prose-td:border-border">
-          <h1>{{ selectedArticle.title }}</h1>
-          <div
-            class="text-sm text-muted-foreground mb-1 flex items-center justify-between">
-            <div>
-              <time v-if="selectedArticle.pubDate">{{
-                new Date(selectedArticle.pubDate).toLocaleDateString()
-              }}</time>
+              Read Article
+            </Button>
+            <Button
+              v-if="item.link"
+              variant="outline"
+              size="sm"
+              as-child
+              @click.stop>
               <a
-                v-if="selectedArticle.link"
-                :href="selectedArticle.link"
+                :href="item.link"
                 target="_blank"
-                class="ml-4"
-                >Read original →</a
-              >
-            </div>
-            <ReadTime
-              :total-words="
-                selectedArticle['content:encodedSnippet']?.split(' ').length ||
-                0
-              " />
-          </div>
-          <div v-html="articleContent"></div>
-        </article>
+                rel="noopener noreferrer"
+                class="flex items-center gap-1.5">
+                <ExternalLink class="w-3.5 h-3.5" />
+                Original
+              </a>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
-    </SidebarInset>
-  </SidebarProvider>
+    </div>
+
+    <article
+      v-else-if="dashboardStore.selectedArticle"
+      class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-0 prose-h1:leading-tight prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:text-foreground prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-foreground prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-p:text-base prose-p:leading-7 prose-p:mb-6 prose-p:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-strong:font-semibold prose-strong:text-foreground prose-img:rounded-lg prose-img:shadow-md prose-img:my-8 prose-pre:bg-muted prose-pre:text-foreground prose-pre:rounded-lg prose-pre:shadow-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-primary prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-ul:list-disc prose-ul:pl-6 prose-li:marker:text-primary prose-ol:list-decimal prose-ol:pl-6 prose-hr:border-border prose-hr:my-8 prose-table:overflow-hidden prose-th:bg-muted prose-th:font-semibold prose-td:border-border">
+      <h1>{{ dashboardStore.selectedArticle.title }}</h1>
+      <div
+        class="text-sm text-muted-foreground mb-1 flex items-center justify-between">
+        <div>
+          <time v-if="dashboardStore.selectedArticle.pubDate">{{
+            new Date(
+              dashboardStore.selectedArticle.pubDate,
+            ).toLocaleDateString()
+          }}</time>
+          <a
+            v-if="dashboardStore.selectedArticle.link"
+            :href="dashboardStore.selectedArticle.link"
+            target="_blank"
+            class="ml-4"
+            >Read original →</a
+          >
+        </div>
+        <ReadTime
+          :total-words="
+            dashboardStore.selectedArticle['content:encodedSnippet']?.split(' ')
+              .length || 0
+          " />
+      </div>
+      <div v-html="articleContent"></div>
+    </article>
+  </div>
 </template>
