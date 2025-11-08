@@ -9,7 +9,7 @@ const signInWithGoogle = async () => {
     try {
         await authClient.signIn.social({
             provider: "google",
-            callbackURL: "/dashboard",
+            callbackURL: "/dashboard/feed",
         });
     } catch (error) {
         console.error(error);
