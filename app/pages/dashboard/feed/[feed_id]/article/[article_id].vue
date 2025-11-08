@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 import DOMPurify from 'dompurify';
-
+const { $trpc } = useNuxtApp();
+const authStore = useAuthStore();
+const userId = computed(() => authStore.session?.user?.id ?? '');
 const route = useRoute();
 const dashboardStore = useDashboardStore();
 const favoritesStore = useFavoritesStore();
@@ -17,9 +19,7 @@ const articleContent = computed(() => {
   try {
     const feedItem = dashboardStore.selectedArticle;
     if (feedItem['content:encoded']) {
-      const sanitizedContent = DOMPurify.sanitize(
-        feedItem['content:encoded'] || '',
-      );
+      const sanitizedContent = DOMPurify.sanitize(feedItem['content:encoded'] || '');
       return sanitizedContent;
     }
     if (feedItem.content) {
@@ -45,9 +45,7 @@ watch(
         const articleId = match[2];
 
         // Select feed first
-        const feed = feeds.data.find(
-          (f: any) => String(f.id) === feedId || f.id === feedId,
-        );
+        const feed = feeds.data.find((f: any) => String(f.id) === feedId || f.id === feedId);
         if (feed) {
           dashboardStore.selectFeed(feed);
         }
@@ -62,11 +60,7 @@ watch(
 
 const articleGuid = computed(() => {
   if (!dashboardStore.selectedArticle) return null;
-  return (
-    dashboardStore.selectedArticle.guid ||
-    dashboardStore.selectedArticle.link ||
-    null
-  );
+  return dashboardStore.selectedArticle.guid || dashboardStore.selectedArticle.link || null;
 });
 
 const isArticleFavorite = computed(() => {
@@ -89,16 +83,26 @@ const articleWordCount = computed(() => {
   const text = articleContent.value.replace(/<[^>]*>/g, ' ');
   return text.split(/\s+/).filter((word: string) => word.length > 0).length;
 });
+
+const {
+  data: summarizeArticleData,
+  mutate: summarizeArticle,
+  asyncStatus: summarizeArticleLoading,
+} = useMutation({
+  key: ['summarizeArticle', userId.value ?? ''],
+  mutation: async () => {
+    const response = await $trpc.ai.summarize.mutate({
+      articleGuid: articleGuid.value,
+    });
+    return response;
+  },
+});
 </script>
 
 <template>
   <div class="w-full mx-auto px-4 py-8 max-w-4xl">
-    <div
-      v-if="!dashboardStore.selectedArticle"
-      class="flex items-center justify-center h-64">
-      <Icon
-        name="lucide:loader-circle"
-        class="w-6 h-6 animate-spin text-muted-foreground" />
+    <div v-if="!dashboardStore.selectedArticle" class="flex items-center justify-center h-64">
+      <Icon name="lucide:loader-circle" class="w-6 h-6 animate-spin text-muted-foreground" />
     </div>
 
     <article
@@ -110,35 +114,51 @@ const articleWordCount = computed(() => {
           @click="handleToggleFavorite"
           class="shrink-0 p-1 cursor-pointer"
           :class="{ 'text-red-500': isArticleFavorite }"
-          :disabled="
-            !articleGuid || favoritesStore.toggleFavoriteStatus === 'loading'
-          ">
+          :disabled="!articleGuid || favoritesStore.toggleFavoriteStatus === 'loading'">
           <Icon
-            :name="
-              isArticleFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'
-            "
+            :name="isArticleFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'"
             class="w-6 h-6 transition-all duration-300 hover:scale-110"
             :class="{ 'scale-110': isArticleFavorite }" />
         </button>
       </div>
-      <div
-        class="text-sm text-muted-foreground mb-1 flex items-center justify-between">
-        <div>
-          <time v-if="dashboardStore.selectedArticle.pubDate">{{
-            new Date(
-              dashboardStore.selectedArticle.pubDate,
-            ).toLocaleDateString()
-          }}</time>
-          <a
-            v-if="dashboardStore.selectedArticle.link"
-            :href="dashboardStore.selectedArticle.link"
-            target="_blank"
-            class="ml-4"
-            >Read original →</a
-          >
+      <div class="text-sm text-muted-foreground mb-1 flex items-center justify-between">
+        <div class="flex items-center gap-1 justify-center">
+          <time v-if="dashboardStore.selectedArticle.pubDate">{{ new Date(dashboardStore.selectedArticle.pubDate).toLocaleDateString() }}</time>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <a
+                  v-if="dashboardStore.selectedArticle.link"
+                  :href="dashboardStore.selectedArticle.link"
+                  target="_blank"
+                  class="m-1 flex items-center justify-center">
+                  <Icon name="heroicons:arrow-top-right-on-square" size="16" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open Original Article</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Icon
+                  @click="summarizeArticle"
+                  :name="summarizeArticleLoading === 'loading' ? 'svg-spinners:180-ring' : 'heroicons:sparkles'"
+                  size="16" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Summarize Article</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <ReadTime :total-words="articleWordCount" />
       </div>
+      <blockquote v-if="summarizeArticleData?.data" className="mt-6 border-l-2 pl-6 italic">
+        {{ summarizeArticleData?.data }}
+      </blockquote>
       <div v-html="articleContent"></div>
     </article>
   </div>

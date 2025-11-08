@@ -61,13 +61,7 @@ const handleFeedRefresh = () => {
   emit('refreshFeed', true);
 };
 
-const data = [
-  'John Smith',
-  'John Doe',
-  'Jane Doe',
-  'Phillip Green',
-  'Peter Brown',
-];
+const data = ['John Smith', 'John Doe', 'Jane Doe', 'Phillip Green', 'Peter Brown'];
 
 const input = shallowRef('');
 const sideBarData = ref<NavItem[]>(props.navMain);
@@ -88,9 +82,7 @@ const handleSearchInput = (value: string) => {
     const matches = res.matches;
     const refIndex = matches?.map((match) => match.refIndex);
     if (!refIndex) return res.item;
-    const filteredItems = items.filter((item, index) =>
-      refIndex.includes(index),
-    );
+    const filteredItems = items.filter((item, index) => refIndex.includes(index));
     return {
       ...res.item,
       items: filteredItems,
@@ -133,9 +125,7 @@ const searchResults = computed(() => {
           </SidebarMenuButton>
         </SidebarGroupContent>
       </SidebarGroup>
-      <div
-        v-if="refreshLoading === 'loading'"
-        class="flex items-center justify-center h-full opacity-50">
+      <div v-if="refreshLoading === 'loading'" class="flex items-center justify-center h-full opacity-50">
         <Loader2 class="w-4 h-4 animate-spin" />
       </div>
       <Collapsible
@@ -150,36 +140,27 @@ const searchResults = computed(() => {
           <SidebarGroupLabel
             as-child
             class="group/label p-4 text-sm font-medium text-sidebar-foreground hover:bg-muted/50 cursor-pointer transition-colors border-b border-border/20 group-data-[state=open]/collapsible:border-border/30">
-            <CollapsibleTrigger
-              class="flex items-center justify-between w-full">
-              <div
-                class="flex items-center gap-3 min-w-0 flex-1 pr-3"
-                @click.stop="handleFeedClick(item)">
+            <CollapsibleTrigger class="flex items-center justify-between w-full">
+              <div class="flex items-center gap-3 min-w-0 flex-1 pr-3" @click.stop="handleFeedClick(item)">
                 <Rss class="w-4 h-4 text-primary shrink-0" />
                 <span class="truncate text-left flex-1">{{ item.title }}</span>
                 <Badge variant="secondary" class="text-xs px-2 py-0.5 shrink-0">
                   {{ item.items?.length || 0 }}
                 </Badge>
               </div>
-              <ChevronRight
-                class="w-4 h-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              <ChevronRight class="w-4 h-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
             </CollapsibleTrigger>
           </SidebarGroupLabel>
-          <CollapsibleContent
-            class="transition-all duration-200 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+          <CollapsibleContent class="transition-all duration-200 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
             <SidebarGroupContent class="p-2">
               <SidebarMenu class="space-y-1">
-                <SidebarMenuItem
-                  v-for="(childItem, index) in item.items"
-                  :key="childItem.title"
-                  class="group">
+                <SidebarMenuItem v-for="(childItem, index) in item.items" :key="childItem.title" class="group">
                   <SidebarMenuButton
                     :is-active="childItem.isActive"
                     class="p-3 hover:bg-muted/70 cursor-pointer data-[active=true]:bg-primary/10 data-[active=true]:border-l-2 data-[active=true]:border-primary"
                     @click="handleArticleClick(childItem)">
                     <div class="flex items-center gap-3 w-full">
-                      <Calendar
-                        class="text-muted-foreground shrink-0 w-4 h-4" />
+                      <Calendar class="text-muted-foreground shrink-0 w-4 h-4" />
                       <div class="flex-1 min-w-0">
                         <p
                           class="text-sm truncate font-medium leading-5 text-foreground group-hover:text-primary transition-colors group-data-[active=true]:text-primary group-data-[active=true]:font-semibold">
@@ -197,20 +178,9 @@ const searchResults = computed(() => {
     </SidebarContent>
     <SidebarFooter class="flex flex-row gap-2 m-2 items-center justify-center">
       <AddModal />
-      <Button
-        variant="secondary"
-        class="w-[15%]"
-        @click="refreshFeed"
-        size="icon-sm"
-        :disabled="refreshLoading == 'loading'">
-        <Icon
-          v-if="refreshLoading == 'idle'"
-          name="heroicons:arrow-path-20-solid"
-          class="w-4 h-4" />
-        <Icon
-          v-else
-          name="svg-spinners:180-ring"
-          class="w-4 h-4 animate-spin" />
+      <Button variant="secondary" class="w-[15%]" @click="refreshFeed" size="icon-sm" :disabled="refreshLoading == 'loading'">
+        <Icon v-if="refreshLoading == 'idle'" name="heroicons:arrow-path-20-solid" class="w-4 h-4" />
+        <Icon v-else name="svg-spinners:180-ring" class="w-4 h-4 animate-spin" />
       </Button>
     </SidebarFooter>
     <SidebarRail />

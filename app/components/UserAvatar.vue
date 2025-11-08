@@ -19,7 +19,7 @@ const handleLogout = async () => {
 };
 
 const goToDashboard = () => {
-  router.push('/dashboard');
+  router.push('/dashboard/feed');
 };
 
 const handleSettingsClick = (event: Event) => {
@@ -45,19 +45,13 @@ const handleSettingsClick = (event: Event) => {
           <p class="text-sm font-medium">{{ session.user?.email }}</p>
         </div>
         <Separator />
-        <Button
-          variant="ghost"
-          class="w-full justify-start"
-          @click="goToDashboard">
+        <Button variant="ghost" class="w-full justify-start" @click="goToDashboard">
           <Icon name="heroicons:rss-solid" class="w-4 h-4" />
           Dashboard
         </Button>
         <SettingsModal />
         <Separator />
-        <Button
-          variant="ghost"
-          class="w-full justify-start text-destructive hover:text-destructive"
-          @click="handleLogout">
+        <Button variant="ghost" class="w-full justify-start text-destructive hover:text-destructive" @click="handleLogout">
           <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4" />
           Logout
         </Button>
