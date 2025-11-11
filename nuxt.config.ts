@@ -15,7 +15,10 @@ const script = isProduction
       },
     ]
   : [];
-console.log(process.env.NUXT_REDIS_URL);
+console.log(process.env.REDISHOST);
+console.log(process.env.REDISPORT);
+console.log(process.env.REDIS_PASSWORD);
+console.log(process.env.REDISUSER);
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -79,11 +82,11 @@ export default defineNuxtConfig({
       cache: {
         driver: 'redis',
         host: process.env.REDISHOST!,
-        tls: true as any,
         port: process.env.REDISPORT!,
         password: process.env.REDIS_PASSWORD!,
         username: process.env.REDISUSER!,
       },
     },
+    preset: 'bun',
   },
 });
