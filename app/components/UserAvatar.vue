@@ -19,7 +19,7 @@ const handleLogout = async () => {
 };
 
 const goToDashboard = () => {
-  router.push('/dashboard');
+  router.push('/dashboard/feed');
 };
 
 const handleSettingsClick = (event: Event) => {
