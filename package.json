@@ -5,7 +5,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev && docker compose up -d db",
-    "start": "bun run .output/server/index.mjs",
+    "start": "node .output/server/index.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -13,7 +13,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "drizzle-kit migrate",
-    "db:migrate:prod": "bun run scripts/migrate.ts"
+    "db:migrate:prod": "node scripts/migrate.ts"
   },
   "dependencies": {
     "@better-auth/client": "^0.0.2-alpha.3",
@@ -65,8 +65,5 @@
     "tsx": "^4.19.2",
     "typescript": "^5.9.3",
     "zod": "^4.1.12"
-  },
-  "engines": {
-    "node": ">=22.12.0"
   }
 }

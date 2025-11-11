@@ -87,6 +87,5 @@ export default defineNuxtConfig({
         username: process.env.REDISUSER!,
       },
     },
-    preset: 'bun',
   },
 });
