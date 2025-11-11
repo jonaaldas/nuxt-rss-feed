@@ -1,49 +1,49 @@
-import tailwindcss from "@tailwindcss/vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-import { fileURLToPath } from "node:url";
+import tailwindcss from '@tailwindcss/vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { fileURLToPath } from 'node:url';
 
 const env = process.env.NODE_ENV;
-const isProduction = env === "production";
+const isProduction = env === 'production';
 const script = isProduction
   ? [
       {
         defer: true,
         src: isProduction
-          ? "https://umami-production-772f.up.railway.app/script.js"
-          : "",
-        "data-website-id": "91f3aa7f-b2a0-4ce5-a388-db6824353524",
+          ? 'https://umami-production-772f.up.railway.app/script.js'
+          : '',
+        'data-website-id': '91f3aa7f-b2a0-4ce5-a388-db6824353524',
       },
     ]
   : [];
 console.log(process.env.NUXT_REDIS_URL);
 
 export default defineNuxtConfig({
-  compatibilityDate: "2025-07-15",
+  compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   app: {
     head: {
       script,
     },
-    pageTransition: { name: "page", mode: "out-in" },
+    pageTransition: { name: 'page', mode: 'out-in' },
   },
   modules: [
-    "shadcn-nuxt",
-    "@nuxtjs/color-mode",
-    "@pinia/colada-nuxt",
-    "@pinia/nuxt",
-    "@vueuse/nuxt",
-    "@nuxt/icon",
+    'shadcn-nuxt',
+    '@nuxtjs/color-mode',
+    '@pinia/colada-nuxt',
+    '@pinia/nuxt',
+    '@vueuse/nuxt',
+    '@nuxt/icon',
   ],
   colorMode: {
-    classSuffix: "",
+    classSuffix: '',
   },
   shadcn: {
-    prefix: "",
-    componentDir: "./app/components/ui",
+    prefix: '',
+    componentDir: './app/components/ui',
   },
-  css: ["./styles.css"],
+  css: ['./styles.css'],
   alias: {
-    "@": fileURLToPath(new URL("./app", import.meta.url)),
+    '@': fileURLToPath(new URL('./app', import.meta.url)),
   },
   vite: {
     plugins: [tailwindcss(), tsconfigPaths()],
@@ -52,7 +52,7 @@ export default defineNuxtConfig({
     port: 9292,
   },
   build: {
-    transpile: ["trpc-nuxt"],
+    transpile: ['trpc-nuxt'],
   },
   ssr: false,
   runtimeConfig: {
@@ -70,15 +70,18 @@ export default defineNuxtConfig({
   nitro: {
     devStorage: {
       cache: {
-        driver: "fs",
-        base: "./cache",
+        driver: 'fs',
+        base: './cache',
       },
     },
     storage: {
       cache: {
-        driver: "upstash",
-        url: process.env.NUXT_REDIS_URL,
-        token: process.env.NUXT_REDIS_TOKEN,
+        driver: 'redis',
+        host: process.env.NUXT_REDIS_HOST!,
+        tls: true as any,
+        port: process.env.NUXT_REDIS_PORT!,
+        password: process.env.NUXT_REDIS_PASSWORD!,
+        username: process.env.NUXT_REDIS_USER!,
       },
     },
   },
