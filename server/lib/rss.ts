@@ -1,17 +1,7 @@
 import { ofetch } from 'ofetch';
 import Parser from 'rss-parser';
 
-const parser = new Parser({
-  customFields: {
-    item: ['content:encoded', 'media:content'],
-  },
-  xml2js: {
-    ignoreAttrs: true,
-    mergeAttrs: false,
-    explicitArray: false,
-  },
-});
-
+const parser = new Parser();
 export const fetchRssFeed = async (url: string) => {
   try {
     const response = await ofetch(url, {
