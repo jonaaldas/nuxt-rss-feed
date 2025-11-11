@@ -61,10 +61,11 @@ export default defineNuxtConfig({
     },
     private: {
       betterAuthSecret: process.env.NUXT_BETTER_AUTH_SECRET!,
-      databaseUrl: process.env.NUXT_DATABASE_URL!,
+      databaseUrl: process.env.DATABASE_URL!,
       googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID!,
       googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET!,
-      productionDatabaseUrl: process.env.NUXT_PRODUCTION_DATABASE_URL!,
+      productionDatabaseUrlMigrations:
+        process.env.NUXT_PRODUCTION_DATABASE_URL_MIGRATIONS!,
     },
   },
   nitro: {
@@ -77,11 +78,11 @@ export default defineNuxtConfig({
     storage: {
       cache: {
         driver: 'redis',
-        host: process.env.NUXT_REDIS_HOST!,
+        host: process.env.REDISHOST!,
         tls: true as any,
-        port: process.env.NUXT_REDIS_PORT!,
-        password: process.env.NUXT_REDIS_PASSWORD!,
-        username: process.env.NUXT_REDIS_USER!,
+        port: process.env.REDISPORT!,
+        password: process.env.REDIS_PASSWORD!,
+        username: process.env.REDISUSER!,
       },
     },
   },
