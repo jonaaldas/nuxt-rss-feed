@@ -81,10 +81,7 @@ export default defineNuxtConfig({
     storage: {
       cache: {
         driver: 'redis',
-        host: process.env.REDISHOST!,
-        port: process.env.REDISPORT!,
-        password: process.env.REDIS_PASSWORD!,
-        username: process.env.REDISUSER!,
+        url: process.env.REDIS_URL!,
       },
     },
   },
