@@ -3,7 +3,7 @@ import { RssFeedItem } from '~~/types/rss';
 import { google } from '@ai-sdk/google';
 import { get, set } from '~~/server/lib/redis';
 
-export const summarizeArticle = async (article: { article: string; guid: string }) => {
+export const summarizeArticle = async (article: RssFeedItem) => {
   try {
     const cacheKey = `summary:${article.guid}`;
     const cachedSummary = await get(cacheKey);
@@ -28,7 +28,7 @@ export const summarizeArticle = async (article: { article: string; guid: string 
 
       **Tone:** Match the original article's tone while remaining objective
       **Length:** Max 4 lines of text`,
-      prompt: `Summarize the following article: ${article.article}`,
+      prompt: `Summarize the following article: ${article.content || article.contentEncoded || article.contentEncodedSnippet || article.contentSnipper}`,
     });
 
     await set(cacheKey, text);

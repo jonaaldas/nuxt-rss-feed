@@ -13,10 +13,10 @@ export const aiRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const article = await getArticle(ctx.user.id, input.articleGuid);
-      if (!article) {
+      if (!article.data) {
         return { data: null, error: 'Article not found' };
       }
-      const summary = await summarizeArticle(article.data as RssFeedItem);
+      const summary = await summarizeArticle(article.data);
       return summary;
     }),
 });

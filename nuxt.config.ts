@@ -13,10 +13,6 @@ const script = isProduction
       },
     ]
   : [];
-console.log(process.env.REDISHOST);
-console.log(process.env.REDISPORT);
-console.log(process.env.REDIS_PASSWORD);
-console.log(process.env.REDISUSER);
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
