@@ -9,16 +9,22 @@ export type NavItem = {
 
 export const RssFeedItemSchema = z.object({
   content: z.string(),
-  contentEncoded: z.string(),
-  contentEncodedSnippet: z.string(),
-  contentSnipper: z.string(),
+  contentEncoded: z.string().optional(),
+  contentEncodedSnippet: z.string().optional(),
+  contentSnipper: z.string().optional(),
   creator: z.string(),
-  dcCreator: z.string(),
-  enclosure: z.object({
-    length: z.number(),
-    type: z.string(),
-    url: z.string(),
-  }),
+  dcCreator: z.string().optional(),
+  enclosure: z
+    .object({
+      length: z
+        .union([z.number(), z.string()])
+        .transform((val) =>
+          typeof val === 'string' ? parseInt(val, 10) || 0 : val,
+        ),
+      type: z.string(),
+      url: z.string(),
+    })
+    .optional(),
   guid: z.string(),
   isoDate: z.string(),
   link: z.string(),
@@ -28,12 +34,12 @@ export const RssFeedItemSchema = z.object({
 
 export type RssFeedItem = {
   content: string;
-  contentEncoded: string;
-  contentEncodedSnippet: string;
-  contentSnipper: string;
+  contentEncoded?: string;
+  contentEncodedSnippet?: string;
+  contentSnipper?: string;
   creator: string;
-  dcCreator: string;
-  enclosure: { length: number; type: string; url: string };
+  dcCreator?: string;
+  enclosure?: { length: number; type: string; url: string };
   guid: string;
   isoDate: string;
   link: string;

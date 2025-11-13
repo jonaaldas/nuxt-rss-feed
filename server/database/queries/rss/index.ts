@@ -3,7 +3,7 @@ import { RssColumns, rssFeed, rssFeedInsertSchema, rssFeedUpdateSchema } from '.
 import { and, eq } from 'drizzle-orm';
 import { del, get, set } from '../../../lib/redis';
 import type { H3Event } from 'h3';
-import type { RssFeedSelectSchema, rssFeedSelectSchema } from '../../schema';
+import type { RssFeedSelectSchema } from '../../schema';
 
 export const getRssFeeds = async (userId: string): Promise<RssFeedSelectSchema[]> => {
   try {

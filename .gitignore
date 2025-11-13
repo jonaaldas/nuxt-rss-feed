@@ -25,3 +25,4 @@ logs
 
 # localcache
 cache
+docker-compose.yml

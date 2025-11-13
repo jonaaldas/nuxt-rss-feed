@@ -1,11 +1,11 @@
-import { defineConfig } from "drizzle-kit";
+import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-  schema: "./server/database/schema.ts",
-  out: "./server/database/migrations",
-  dialect: "postgresql",
+  schema: './server/database/schema.ts',
+  out: './server/database/migrations',
+  dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NUXT_DATABASE_URL!,
+    url: process.env.DATABASE_URL!,
   },
   verbose: true,
   strict: true,

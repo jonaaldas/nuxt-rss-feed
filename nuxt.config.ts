@@ -13,6 +13,10 @@ const script = isProduction
       },
     ]
   : [];
+console.log(process.env.REDISHOST);
+console.log(process.env.REDISPORT);
+console.log(process.env.REDIS_PASSWORD);
+console.log(process.env.REDISUSER);
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -52,10 +56,10 @@ export default defineNuxtConfig({
     },
     private: {
       betterAuthSecret: process.env.NUXT_BETTER_AUTH_SECRET!,
-      databaseUrl: process.env.NUXT_DATABASE_URL!,
+      databaseUrl: process.env.DATABASE_URL!,
       googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID!,
       googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET!,
-      productionDatabaseUrl: process.env.NUXT_PRODUCTION_DATABASE_URL!,
+      productionDatabaseUrlMigrations: process.env.NUXT_PRODUCTION_DATABASE_URL_MIGRATIONS!,
     },
   },
   nitro: {
@@ -67,9 +71,8 @@ export default defineNuxtConfig({
     },
     storage: {
       cache: {
-        driver: 'upstash',
-        url: process.env.NUXT_REDIS_URL,
-        token: process.env.NUXT_REDIS_TOKEN,
+        driver: 'redis',
+        url: process.env.REDIS_URL!,
       },
     },
   },
