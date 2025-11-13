@@ -1,15 +1,11 @@
 import { db } from '../../index';
-import {
-  RssColumns,
-  rssFeed,
-  rssFeedInsertSchema,
-  rssFeedUpdateSchema,
-} from '../../schema';
+import { RssColumns, rssFeed, rssFeedInsertSchema, rssFeedUpdateSchema } from '../../schema';
 import { and, eq } from 'drizzle-orm';
 import { del, get, set } from '../../../lib/redis';
 import type { H3Event } from 'h3';
+import type { RssFeedSelectSchema } from '../../schema';
 
-export const getRssFeeds = async (userId: string) => {
+export const getRssFeeds = async (userId: string): Promise<RssFeedSelectSchema[]> => {
   try {
     const cachedFeeds = await get(`feed:${userId}`);
 
@@ -17,10 +13,7 @@ export const getRssFeeds = async (userId: string) => {
       return cachedFeeds;
     }
 
-    const rssFeeds = await db
-      .select()
-      .from(rssFeed)
-      .where(eq(rssFeed.userId, userId));
+    const rssFeeds = await db.select().from(rssFeed).where(eq(rssFeed.userId, userId));
 
     await set(`feed:${userId}`, rssFeeds);
 
@@ -31,17 +24,10 @@ export const getRssFeeds = async (userId: string) => {
   }
 };
 
-export const saveRssFeed = async (
-  rssFeedValues: Omit<RssColumns, 'createdAt' | 'updatedAt'>,
-  userId: string,
-  event: H3Event,
-) => {
+export const saveRssFeed = async (rssFeedValues: Omit<RssColumns, 'createdAt' | 'updatedAt'>, userId: string, event: H3Event) => {
   const validatedRssFeedValues = rssFeedInsertSchema.parse(rssFeedValues);
   try {
-    const newRssFeed = await db
-      .insert(rssFeed)
-      .values(validatedRssFeedValues)
-      .returning();
+    const newRssFeed = await db.insert(rssFeed).values(validatedRssFeedValues).returning();
     event.waitUntil(del(`feed:${userId}`));
     return { data: newRssFeed, error: null };
   } catch (error) {
@@ -50,10 +36,7 @@ export const saveRssFeed = async (
   }
 };
 
-export const updateAllFeeds = async (
-  feeds: Array<Omit<RssColumns, 'createdAt' | 'updatedAt'>>,
-  userId: string,
-) => {
+export const updateAllFeeds = async (feeds: Array<Omit<RssColumns, 'createdAt' | 'updatedAt'>>, userId: string) => {
   try {
     const updatePromises = feeds.map(async (feed) => {
       const validatedFeed = rssFeedUpdateSchema.parse(feed);
@@ -73,9 +56,7 @@ export const updateAllFeeds = async (
 
 export const deleteUrl = async (id: string, userId: string) => {
   try {
-    const res = await db
-      .delete(rssFeed)
-      .where(and(eq(rssFeed.userId, userId), eq(rssFeed.id, id)));
+    const res = await db.delete(rssFeed).where(and(eq(rssFeed.userId, userId), eq(rssFeed.id, id)));
 
     return res;
   } catch (err) {

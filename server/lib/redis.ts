@@ -1,8 +1,5 @@
-import {
-  RssFeedSelectSchema,
-  FavoriteArticleSelectSchema,
-} from '../database/schema';
-
+import { RssFeedSelectSchema, FavoriteArticleSelectSchema } from '../database/schema';
+import type { StorageValue } from 'unstorage';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const getKey = (key: string) => {
@@ -12,26 +9,22 @@ const getKey = (key: string) => {
 
 export const get = async (key: string) => {
   const str = getKey(key);
-  const value = await useStorage<RssFeedSelectSchema[]>('cache').getItem(str);
+  const value = await useStorage('cache').getItem(str);
   return value;
 };
 
-export const set = async (key: string, value: RssFeedSelectSchema[]) => {
+export const set = async <TValue extends StorageValue>(key: string, value: TValue) => {
   const str = getKey(key);
-  await useStorage<RssFeedSelectSchema[]>('cache').setItem(str, value);
+  await useStorage('cache').setItem(str, value);
 };
 
 export const getFavorite = async (key: string) => {
   const str = getKey(key);
-  const value =
-    await useStorage<FavoriteArticleSelectSchema[]>('cache').getItem(str);
+  const value = await useStorage<FavoriteArticleSelectSchema[]>('cache').getItem(str);
   return value;
 };
 
-export const setFavorite = async (
-  key: string,
-  value: FavoriteArticleSelectSchema[],
-) => {
+export const setFavorite = async (key: string, value: FavoriteArticleSelectSchema[]) => {
   const str = getKey(key);
   await useStorage<FavoriteArticleSelectSchema[]>('cache').setItem(str, value);
 };

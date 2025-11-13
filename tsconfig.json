@@ -19,7 +19,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": ["./app/*"],
+      "@/server/*": ["./server/*"]
     }
   }
 }

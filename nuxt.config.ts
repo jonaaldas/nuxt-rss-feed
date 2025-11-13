@@ -8,17 +8,11 @@ const script = isProduction
   ? [
       {
         defer: true,
-        src: isProduction
-          ? 'https://umami-production-772f.up.railway.app/script.js'
-          : '',
+        src: isProduction ? 'https://umami-production-772f.up.railway.app/script.js' : '',
         'data-website-id': '91f3aa7f-b2a0-4ce5-a388-db6824353524',
       },
     ]
   : [];
-console.log(process.env.REDISHOST);
-console.log(process.env.REDISPORT);
-console.log(process.env.REDIS_PASSWORD);
-console.log(process.env.REDISUSER);
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -29,14 +23,7 @@ export default defineNuxtConfig({
     },
     pageTransition: { name: 'page', mode: 'out-in' },
   },
-  modules: [
-    'shadcn-nuxt',
-    '@nuxtjs/color-mode',
-    '@pinia/colada-nuxt',
-    '@pinia/nuxt',
-    '@vueuse/nuxt',
-    '@nuxt/icon',
-  ],
+  modules: ['shadcn-nuxt', '@nuxtjs/color-mode', '@pinia/colada-nuxt', '@pinia/nuxt', '@vueuse/nuxt', '@nuxt/icon'],
   colorMode: {
     classSuffix: '',
   },
@@ -47,6 +34,7 @@ export default defineNuxtConfig({
   css: ['./styles.css'],
   alias: {
     '@': fileURLToPath(new URL('./app', import.meta.url)),
+    '@/server': fileURLToPath(new URL('./server', import.meta.url)),
   },
   vite: {
     plugins: [tailwindcss(), tsconfigPaths()],
@@ -67,8 +55,7 @@ export default defineNuxtConfig({
       databaseUrl: process.env.DATABASE_URL!,
       googleClientId: process.env.NUXT_GOOGLE_CLIENT_ID!,
       googleClientSecret: process.env.NUXT_GOOGLE_CLIENT_SECRET!,
-      productionDatabaseUrlMigrations:
-        process.env.NUXT_PRODUCTION_DATABASE_URL_MIGRATIONS!,
+      productionDatabaseUrlMigrations: process.env.NUXT_PRODUCTION_DATABASE_URL_MIGRATIONS!,
     },
   },
   nitro: {
