@@ -1,0 +1,134 @@
+name: Railway Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.action != 'closed' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        uses: ayungavis/railway-preview-deploy@v1.0.2
+        with:
+          railway_api_token: ${{ secrets.RAILWAY_API_TOKEN }}
+          project_id: ${{ secrets.RAILWAY_PROJECT_ID }}
+          environment_name: 'staging'
+          preview_environment_name: 'pr-${{ github.event.pull_request.number }}'
+          environment_variables: |
+            {
+              "DATABASE_URL": "${{ secrets.DATABASE_URL }}",
+              "REDIS_URL": "${{ secrets.REDIS_URL }}",
+              "NUXT_BETTER_AUTH_SECRET": "${{ secrets.NUXT_BETTER_AUTH_SECRET }}",
+              "NUXT_GOOGLE_CLIENT_ID": "${{ secrets.NUXT_GOOGLE_CLIENT_ID }}",
+              "NUXT_GOOGLE_CLIENT_SECRET": "${{ secrets.NUXT_GOOGLE_CLIENT_SECRET }}",
+              "GOOGLE_GENERATIVE_AI_API_KEY": "${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}"
+            }
+          branch_name: ${{ github.head_ref }}
+
+      - name: Setup Railway CLI
+        if: steps.deploy.outputs.service_domain != ''
+        run: npm install -g @railway/cli
+
+      - name: Set Better Auth URL dynamically
+        if: steps.deploy.outputs.service_domain != ''
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+        run: |
+          railway login --token $RAILWAY_TOKEN
+          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
+          railway variables set NUXT_BETTER_AUTH_URL="https://${{ steps.deploy.outputs.service_domain }}" --service web --environment pr-${{ github.event.pull_request.number }}
+          echo "Better Auth URL set to: https://${{ steps.deploy.outputs.service_domain }}"
+
+      - name: Post deployment info
+        run: echo "Preview deployed at ${{ steps.deploy.outputs.service_domain }}"
+
+      - name: Post or update deployment comment
+        if: steps.deploy.outputs.service_domain != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- preview-comment -->';
+            const deploymentUrl = '${{ steps.deploy.outputs.service_domain }}';
+            const fullUrl = `https://${deploymentUrl}`;
+
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100 
+            });
+            const latestCommit = commits[commits.length - 1];
+            const latestCommitSha = latestCommit.sha.substring(0, 7);
+            const latestCommitAuthor = latestCommit.commit.author.name;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const body = `
+              ${marker}
+              🚀 **Deployment success!**
+
+              - \`web\` deployed at [${deploymentUrl}](${fullUrl})
+
+              ---
+
+              *commit: ${latestCommitSha}*  
+              *author: ${latestCommitAuthor}*
+            `;
+
+            const existingComment = comments.find(comment => comment.body.includes(marker));
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              core.info(`Updated comment ID: ${existingComment.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              core.info('Created a new comment');
+            }
+
+  cleanup:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged == true || github.event.action ==
+      'closed' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cleanup Railway Environment
+        uses: ayungavis/railway-preview-deploy@v1.0.2
+        with:
+          railway_api_token: ${{ secrets.RAILWAY_API_TOKEN }}
+          project_id: ${{ secrets.RAILWAY_PROJECT_ID }}
+          environment_name: production
+          preview_environment_name: 'pr-${{ github.event.pull_request.number }}'
+          branch_name: ${{ github.head_ref }}
+          cleanup: 'true'

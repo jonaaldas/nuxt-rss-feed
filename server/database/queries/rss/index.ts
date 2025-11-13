@@ -1,13 +1,13 @@
-import { db } from "../../index";
+import { db } from '../../index';
 import {
   RssColumns,
   rssFeed,
   rssFeedInsertSchema,
   rssFeedUpdateSchema,
-} from "../../schema";
-import { and, eq } from "drizzle-orm";
-import { del, get, set } from "../../../lib/redis";
-import type { H3Event } from "h3";
+} from '../../schema';
+import { and, eq } from 'drizzle-orm';
+import { del, get, set } from '../../../lib/redis';
+import type { H3Event } from 'h3';
 
 export const getRssFeeds = async (userId: string) => {
   try {
@@ -27,12 +27,12 @@ export const getRssFeeds = async (userId: string) => {
     return rssFeeds;
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to get RSS feeds");
+    throw new Error('Failed to get RSS feeds');
   }
 };
 
 export const saveRssFeed = async (
-  rssFeedValues: Omit<RssColumns, "createdAt" | "updatedAt">,
+  rssFeedValues: Omit<RssColumns, 'createdAt' | 'updatedAt'>,
   userId: string,
   event: H3Event,
 ) => {
@@ -51,7 +51,7 @@ export const saveRssFeed = async (
 };
 
 export const updateAllFeeds = async (
-  feeds: Array<Omit<RssColumns, "createdAt" | "updatedAt">>,
+  feeds: Array<Omit<RssColumns, 'createdAt' | 'updatedAt'>>,
   userId: string,
 ) => {
   try {
