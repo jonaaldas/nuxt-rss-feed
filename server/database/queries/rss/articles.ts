@@ -23,6 +23,7 @@ export const getArticle = async (userId: string, articleGuid: string) => {
 
     return {
       data: {
+        // @ts-ignore
         article: article['content:encodedSnippet'],
         guid: article.guid,
       },
